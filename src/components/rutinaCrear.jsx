@@ -4,10 +4,21 @@ import { openDescansoToast } from './descansoToastModal';
 import "./rutina.css"
 import EjercicioModal from './ejercicioModal';
 
+const DIAS = [
+  { label: 'L', value: 1 },
+  { label: 'M', value: 2 },
+  { label: 'M', value: 3 },
+  { label: 'J', value: 4 },
+  { label: 'V', value: 5 },
+  { label: 'S', value: 6 },
+  { label: 'D', value: 0 },
+];
+
 export default function RutinaCrear({
   draft, onChangeName, onMoveExercise, onRemoveExercise, onAddSet, onRemoveSet, onUpdateSetField,
   onOpenPicker, onSave, onCancel, onDeleteRoutine,
   onDuplicateLastSet, onReorderExercise, onUpdateRest,
+  onChangeDays,
   pickerOpen, pickerSelection, onConfirmPicker, onClosePicker,
   mode = 'full'
 }) {
@@ -18,6 +29,7 @@ export default function RutinaCrear({
   if (!draft) return null;
   const d = draft;
   const isSingle = mode === 'single';
+  const days = d.days || [];
 
   const allCollapsed = d.exercises.length > 0 && d.exercises.every(ex => collapsedIds.has(ex.id));
 
@@ -31,6 +43,13 @@ export default function RutinaCrear({
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
+  };
+
+  const toggleDay = (value) => {
+    const next = days.includes(value)
+      ? days.filter(v => v !== value)
+      : [...days, value];
+    onChangeDays(next);
   };
 
   const handleDragStart = (exi) => (e) => {
@@ -87,22 +106,40 @@ export default function RutinaCrear({
       </div>
       <div className="page-cont top">
         {!isSingle && (
-          <div className="crear-input" style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-            <div style={{ flex: 1 }}>
-              <label>Nombre de la rutina</label>
-              <input type="text" placeholder="Ej. Lunes — Pecho y hombros" value={d.name} onChange={e => onChangeName(e.target.value)} />
+          <>
+            <div className="crear-input" style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <label>Nombre de la rutina</label>
+                <input type="text" placeholder="Ej. Lunes — Pecho y hombros" value={d.name} onChange={e => onChangeName(e.target.value)} />
+              </div>
+              {d.exercises.length > 0 && (
+                <div className="btn" style={{ marginLeft: "15px" }} title='Descanso para todos' onClick={openRestToastAll}>
+                  <Timer size={16} />
+                </div>
+              )}
+              {d.exercises.length > 0 && (
+                <div className="btn" style={{ marginLeft: "5px" }} title={allCollapsed ? 'Expandir todo' : 'Colapsar todo'} onClick={toggleAll}>
+                  {allCollapsed ? <ChevronsUpDown size={16} /> : <ChevronsDownUp size={16} />}
+                </div>
+              )}
             </div>
-            {d.exercises.length > 0 && (
-              <div className="btn" style={{ marginLeft: "15px" }} title='Descanso para todos' onClick={openRestToastAll}>
-                <Timer size={16} />
+
+            <div className="crear-input">
+              <label>¿Qué día la hacés?</label>
+              <div className="dias-selector">
+                {DIAS.map(dia => (
+                  <div
+                    key={dia.value}
+                    className={`dia-chip${days.includes(dia.value) ? ' activo' : ''}`}
+                    onClick={() => toggleDay(dia.value)}
+
+                  >
+                    {dia.label}
+                  </div>
+                ))}
               </div>
-            )}
-            {d.exercises.length > 0 && (
-              <div className="btn" style={{ marginLeft: "5px" }} title={allCollapsed ? 'Expandir todo' : 'Colapsar todo'} onClick={toggleAll}>
-                {allCollapsed ? <ChevronsUpDown size={16} /> : <ChevronsDownUp size={16} />}
-              </div>
-            )}
-          </div>
+            </div>
+          </>
         )}
 
         {d.exercises.map((ex, exi) => {
