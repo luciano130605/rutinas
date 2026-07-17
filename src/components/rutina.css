@@ -653,7 +653,7 @@
 
 
 .kebab-menu {
-    position: absolute;
+    position: fixed;
     right: 18px;
     top: 70px;
     background: var(--componente);
