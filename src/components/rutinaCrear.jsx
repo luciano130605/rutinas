@@ -66,6 +66,16 @@ export default function RutinaCrear({
     });
   };
 
+  const openRestToastAll = () => {
+    openDescansoToast({
+      exerciseName: 'todos los ejercicios',
+      initialValue: d.exercises[0]?.rest,
+      onConfirm: (value) => {
+        d.exercises.forEach((_, exi) => onUpdateRest(exi, value));
+      },
+    });
+  };
+
   return (
     <>
       <div className="header-cont">
@@ -83,7 +93,12 @@ export default function RutinaCrear({
               <input type="text" placeholder="Ej. Lunes — Pecho y hombros" value={d.name} onChange={e => onChangeName(e.target.value)} />
             </div>
             {d.exercises.length > 0 && (
-              <div className="btn" style={{  marginLeft: "5px" }} title={allCollapsed ? 'Expandir todo' : 'Colapsar todo'} onClick={toggleAll}>
+              <div className="btn" style={{ marginLeft: "5px" }} title='Descanso para todos' onClick={openRestToastAll}>
+                <Timer size={16} />
+              </div>
+            )}
+            {d.exercises.length > 0 && (
+              <div className="btn" style={{ marginLeft: "5px" }} title={allCollapsed ? 'Expandir todo' : 'Colapsar todo'} onClick={toggleAll}>
                 {allCollapsed ? <ChevronsUpDown size={16} /> : <ChevronsDownUp size={16} />}
               </div>
             )}
@@ -132,28 +147,45 @@ export default function RutinaCrear({
 
               {!isCollapsed && (
                 <div className="ejercicio-inputs">
-                  <div className="ejercicio-inputs-header"><span></span><span>Kg</span><span>Reps</span><span></span></div>
-                  {ex.sets.map((s, si) => (
-                    <div key={s.id} className="ejercicio-inputs-header">
-                      <span className="ejercicio-num">{si + 1}</span>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={s.weight}
-                        placeholder="0"
-                        onChange={e =>
-                          onUpdateSetField(
-                            exi,
-                            si,
-                            'weight',
-                            e.target.value.replace(',', '.')
-                          )
-                        }
-                      />
-                      <input type="text" inputMode="numeric" value={s.reps} placeholder="0" onChange={e => onUpdateSetField(exi, si, 'reps', e.target.value)} />
-                      <button className="check right" onClick={() => onRemoveSet(exi, si)}><X size={14} /></button>
-                    </div>
-                  ))}
+                  {(() => {
+                    const isBodyweight = ex.equipment === 'P. corporal';
+                    return (
+                      <>
+                        <div className="ejercicio-inputs-header">
+                          <span></span>
+                          {!isBodyweight && <span>Kg</span>}
+                          <span>Reps</span>
+                          <span></span>
+                        </div>
+                        {ex.sets.map((s, si) => (
+                          <div key={s.id} className="ejercicio-inputs-header">
+                            <span className="ejercicio-num">{si + 1}</span>
+                            {!isBodyweight && (
+                              <input
+                                type="text"
+                                inputMode="decimal"
+                                value={s.weight}
+                                placeholder="0"
+                                onChange={e =>
+                                  onUpdateSetField(exi, si, 'weight', e.target.value.replace(',', '.'))
+                                }
+                              />
+                            )}
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={s.reps}
+                              placeholder="0"
+                              onChange={e => onUpdateSetField(exi, si, 'reps', e.target.value)}
+                            />
+                            <button className="check right" onClick={() => onRemoveSet(exi, si)}>
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </>
+                    );
+                  })()}
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button className="btns agregar" onClick={() => onAddSet(exi)}><Plus size={12} /> Añadir serie</button>
                     {ex.sets.length > 0 && (
