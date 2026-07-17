@@ -17,7 +17,7 @@ import "../index.css"
 import Ajustes from './components/ajustes';
 import ProximamentePage from './components/proximamente';
 import { openDescansoToast } from './components/descansoToastModal';
-import { openTiempoDescansoToast } from './components/TiempoDescansoToast';
+import openTiempoDescansoToast from './components/TiempoDescansoToast';
 
 export default function App() {
   const [screen, setScreen] = useState('routines');

@@ -149,7 +149,7 @@ function ContenidoDescanso() {
         </div>
     );
 }
-export function openTiempoDescansoToast(seconds) {
+export default function openTiempoDescansoToast(seconds) {
     beeped = false;
 
     if (store) {
