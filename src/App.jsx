@@ -25,7 +25,6 @@ export default function App() {
   const [history, setHistory] = useState([]);
   const [customExercises, setCustomExercises] = useState([]);
   const [restDefault, setRestDefault] = useState(90);
-  const [reminders, setReminders] = useState({}); // NUEVO: { [routineId]: { day, time } }
   const [loaded, setLoaded] = useState(false);
 
   const [activeRoutineId, setActiveRoutineId] = useState(null);
@@ -74,7 +73,6 @@ export default function App() {
       try { const r = await window.storage.get('gym_toaster_position', false); if (r && r.value) setToasterPosition(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_custom_exercises', false); if (r && r.value) setCustomExercises(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_rest_default', false); if (r && r.value) setRestDefault(JSON.parse(r.value)); } catch (e) { }
-      try { const r = await window.storage.get('gym_reminders', false); if (r && r.value) setReminders(JSON.parse(r.value)); } catch (e) { } // NUEVO
       setLoaded(true);
     })();
   }, []);
@@ -91,9 +89,8 @@ export default function App() {
       try { await window.storage.set('gym_modo_oscuro', JSON.stringify(modoOscuro), false); } catch (e) { console.error(e); }
       try { await window.storage.set('gym_acento', JSON.stringify(acento), false); } catch (e) { console.error(e); }
       try { await window.storage.set('gym_toaster_position', JSON.stringify(toasterPosition), false); } catch (e) { console.error(e); }
-      try { await window.storage.set('gym_reminders', JSON.stringify(reminders), false); } catch (e) { console.error(e); } // NUEVO
     }, 350);
-  }, [routines, history, customExercises, restDefault, reminders, loaded]);
+  }, [routines, history, customExercises, restDefault, loaded]);
 
   const showToast = useCallback((msg, type = 'success') => {
     sileo[type]({
@@ -217,14 +214,17 @@ export default function App() {
   function openEditor(routineId) {
     if (routineId) {
       const r = routines.find(x => x.id === routineId);
-      setEditorDraft({ ...JSON.parse(JSON.stringify(r)), mode: 'full' });
+      setEditorDraft({
+        ...JSON.parse(JSON.stringify(r)),
+        mode: 'full',
+        days: r.days || [],
+      });
     } else {
-      setEditorDraft({ id: null, name: '', exercises: [], mode: 'full' });
+      setEditorDraft({ id: null, name: '', exercises: [], mode: 'full', days: [], reminderTime: '' });
     }
     setKebabOpen(false);
     setScreen('routineEditor');
   }
-
   // ---------- routine editor (un solo ejercicio, dentro de una sesión en curso) ----------
   function openSessionExerciseEditor(exi) {
     if (!session) return;
@@ -278,7 +278,7 @@ export default function App() {
       sileo.error({ title: 'Añade al menos un ejercicio.' });
       return;
     }
-    const { mode, ...toSave } = d;
+    const { mode, ...toSave } = d; // days y reminderTime quedan DENTRO de toSave, se guardan con la rutina
     if (toSave.id) {
       setRoutines(rs => rs.map(r => r.id === toSave.id ? toSave : r));
     } else {
@@ -293,12 +293,6 @@ export default function App() {
 
   function deleteRoutine(id) {
     setRoutines(rs => rs.filter(r => r.id !== id));
-    setReminders(r => { // NUEVO: limpiar recordatorio de la rutina borrada
-      if (!r[id]) return r;
-      const next = { ...r };
-      delete next[id];
-      return next;
-    });
     showToast('Rutina eliminada', 'warning');
   }
 
@@ -371,20 +365,16 @@ export default function App() {
     }
   }
 
-  // ---------- NUEVO: recordatorios ----------
-  function saveReminder(routineId, day, time) {
-    setReminders(r => ({ ...r, [routineId]: { day, time } }));
+  function saveReminder(routineId, days) {
+    setRoutines(rs => rs.map(r => r.id === routineId ? { ...r, days } : r));
     showToast('Recordatorio guardado');
   }
   function clearReminder(routineId) {
-    setReminders(r => {
-      if (!r[routineId]) return r;
-      const next = { ...r };
-      delete next[routineId];
-      return next;
-    });
+    setRoutines(rs => rs.map(r => r.id === routineId ? { ...r, days: [] } : r));
     showToast('Recordatorio eliminado', 'warning');
   }
+
+
 
   // ---------- session ----------
   function startSession(routineId) {
@@ -648,6 +638,7 @@ export default function App() {
             ...oldEx,
             exerciseId: exercise.id,
             name: exercise.nombre,
+            equipment: exercise.equipamiento,
             muscle: exercise.parteDelCuerpo,
             gif: exercise.gif,
           };
@@ -677,6 +668,7 @@ export default function App() {
       exerciseId: exercise.id,
       name: exercise.nombre,
       muscle: exercise.parteDelCuerpo,
+      equipment: exercise.equipamiento,
       gif: exercise.gif,
       rest: '',
       sets: [{ id: uid(), reps: '', weight: '' }]
@@ -812,6 +804,14 @@ export default function App() {
       return { ...d, exercises: arr };
     });
   }
+
+  function updateDraftDays(days) {
+    setEditorDraft(d => ({ ...d, days }));
+  }
+  function updateDraftReminderTime(time) {
+    setEditorDraft(d => ({ ...d, reminderTime: time }));
+  }
+
   function reorderExercise(fromIndex, toIndex) {
     setEditorDraft(d => {
       const arr = [...d.exercises];
@@ -979,7 +979,6 @@ export default function App() {
         {screen === 'routines' && (
           <RutinaPage
             routines={routines}
-            reminders={reminders}
             onNewRoutine={() => openEditor(null)}
             onSelectRoutine={(id) => { setActiveRoutineId(id); setScreen('routineDetail'); setKebabOpen(false); }}
           />
@@ -1010,7 +1009,7 @@ export default function App() {
             onShare={shareRoutine}
             onCopyText={copyRoutineAsText}
             history={history}
-            reminder={reminders[activeRoutine.id]}
+            reminder={{ days: activeRoutine.days || []}}
             onSaveReminder={saveReminder}
             onClearReminder={clearReminder}
           />
@@ -1021,6 +1020,8 @@ export default function App() {
             draft={editorDraft}
             mode={editorDraft?.mode || 'full'}
             onChangeName={updateDraftName}
+            onChangeDays={updateDraftDays}
+            onChangeReminderTime={updateDraftReminderTime}
             onMoveExercise={moveExercise}
             onReorderExercise={reorderExercise}
             onRemoveExercise={removeExercise}
