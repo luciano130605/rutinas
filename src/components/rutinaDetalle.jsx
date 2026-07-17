@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   ChevronLeft, ChevronDown, MoreVertical, Filter, ChevronsUpDown, ChevronsDownUp,
-  Check, X, Bell, BellOff, TrendingUp, TrendingDown, BarChart3
+  Check, X, Bell, BellOff, TrendingUp, TrendingDown, BarChart3,
+  Play
 } from 'lucide-react';
 import "./rutina.css"
 import { sileo } from 'sileo';
@@ -302,7 +303,11 @@ export default function RutinaDetalle({
     <>
       <div className="header-cont" ref={kebabRef}>
         <div className="btn" title='Volver' onClick={onBack}><ChevronLeft size={20} /></div>
-        <div className="btn" title='Opciones' onClick={onToggleKebab}><MoreVertical size={18} /></div>
+
+        <div style={{display:"flex", alignItems:"center", gap: "10px"}}>
+          <button className="btn primario" title='Empezar' onClick={onStartSession}><Play size={20} /></button>
+          <div className="btn" title='Opciones' onClick={onToggleKebab}><MoreVertical size={18} /></div>
+        </div>
         {kebabOpen && (
           <div className="kebab-menu">
             <div className="item" onClick={onEdit}>Editar rutina</div>
@@ -321,7 +326,7 @@ export default function RutinaDetalle({
       <div className="page-cont top">
         <h1>{routine.name}</h1>
 
-        <div className="header-sub" style={{ marginTop: 2, marginBottom: 12, fontSize:".6rem" }}>
+        <div className="header-sub" style={{ marginTop: 2, marginBottom: 12, fontSize: ".6rem" }}>
           {lastEntry
             ? `Última vez: ${formatRelative(lastEntry.date)} · ${lastEntry.totalSets} series`
             : 'Todavía no registraste ninguna sesión de esta rutina'}
