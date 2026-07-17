@@ -4,6 +4,7 @@ import { formatElapsed } from '../utils/time';
 import TiempoDescanso from './TiempoDescanso';
 import EjercicioModal from './ejercicioModal';
 import "./rutina.css"
+import { resetDescansoState } from './tiempoDescansoToast';
 
 export default function RutinaCurso({
   session, restTimer, restDefault, history = [],
@@ -24,6 +25,12 @@ export default function RutinaCurso({
     const id = setInterval(() => forceTick(t => t + 1), 1000);
     return () => clearInterval(id);
   }, [s?.paused]);
+
+  React.useEffect(() => {
+    return () => {
+      resetDescansoState();
+    };
+  }, []);
 
   if (!s) return null;
 

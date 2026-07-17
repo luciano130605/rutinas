@@ -11,7 +11,7 @@ const ejerciciosLocal = [
     { id: "0007", nombre: "Tríceps a un brazo (Polea)", subMusculos: [], gif: "/gifs/triceps-una-mano.gif", parteDelCuerpo: "Triceps", equipamiento: "Polea" },
 
     /* biceps */
-    { id: "0008", nombre: "Curl Z (Barra)", gif: "/gifs/ejemplo.mp4", parteDelCuerpo: "Biceps", equipamiento: "Barra", subMusculos: [] },
+    { id: "0008", nombre: "Curl Z (Barra)", gif: "/gifs/curl-z.gif", parteDelCuerpo: "Biceps", equipamiento: "Barra", subMusculos: [] },
     { id: "0009", nombre: "Curl martillo (Mancuernas)", gif: "/gifs/curl-martillo-con-mancuernas.jpg", parteDelCuerpo: "Biceps", subMusculos: ["Antebrazo"], equipamiento: "Mancuernas" },
     { id: "0010", nombre: "Curl predicador (Maquina)", gif: "/gifs/predicador-maquina.gif", parteDelCuerpo: "Biceps", equipamiento: "Maquinas" },
     { id: "0011", nombre: "Curl predicador (Barra)", gif: "/gifs/predicador-barra.gif", subMusculos: [], parteDelCuerpo: "Biceps", equipamiento: "Barra" },

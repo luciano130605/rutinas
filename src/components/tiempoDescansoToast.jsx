@@ -65,26 +65,77 @@ function useDescansoStore() {
     return store;
 }
 
+function RelojDescanso({ remaining, total, size = 14 }) {
+    const stroke = 1.6;
+    const radius = (size - stroke) / 2;
+    const circumference = 2 * Math.PI * radius;
+
+    const elapsedPct = total > 0 ? Math.min(100, Math.max(0, ((total - remaining) / total) * 100)) : 0;
+    const offset = circumference * (1 - elapsedPct / 100);
+
+    // la "agujita" gira en sentido horario a medida que pasa el tiempo
+    const angleDeg = -90 + (elapsedPct / 100) * 360;
+    const angleRad = (angleDeg * Math.PI) / 180;
+    const handLen = radius * 0.6;
+    const cx = size / 2;
+    const cy = size / 2;
+    const hx = cx + handLen * Math.cos(angleRad);
+    const hy = cy + handLen * Math.sin(angleRad);
+
+    return (
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="reloj-descanso">
+            <circle
+                cx={cx} cy={cy} r={radius}
+                fill="none" strokeWidth={stroke}
+                className="reloj-descanso-bg"
+            />
+            <circle
+                cx={cx} cy={cy} r={radius}
+                fill="none" strokeWidth={stroke}
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                transform={`rotate(-90 ${cx} ${cy})`}
+                className="reloj-descanso-fill"
+            />
+            <line
+                x1={cx} y1={cy} x2={hx} y2={hy}
+                strokeWidth={stroke}
+                strokeLinecap="round"
+                className="reloj-descanso-mano"
+            />
+        </svg>
+    );
+}
+
 function TituloDescanso() {
     const s = useDescansoStore();
     if (!s) return null;
     return (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Timer size={14} /> {formatElapsed(s.remaining * 1000)}
+            <RelojDescanso remaining={s.remaining} total={s.total} /> {formatElapsed(s.remaining * 1000)}
         </span>
     );
 }
-
 function ContenidoDescanso() {
     const s = useDescansoStore();
+    const rootRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (!s || !rootRef.current) return;
+        const cont = rootRef.current.closest('.sileo-cont');
+        if (!cont) return;
+        const pct = s.total > 0
+            ? Math.min(100, Math.max(0, ((s.total - s.remaining) / s.total) * 100))
+            : 0;
+        cont.style.setProperty('--pct', `${pct}%`);
+    }, [s?.remaining, s?.total]);
+
     if (!s) return null;
-    const { remaining, total, running } = s;
-    const pct = total > 0 ? Math.max(0, (remaining / total) * 100) : 0;
+    const { remaining, running } = s;
+
     return (
-        <div className="tiempo-toast" onPointerDown={stopAll} onMouseDown={stopAll} onClick={stopAll}>
-            <div className="tiempo-progreso-cont">
-                <div className="tiempo-progreso-fill" style={{ width: `${pct}%` }} />
-            </div>
+        <div ref={rootRef} className="tiempo-toast" onPointerDown={stopAll} onMouseDown={stopAll} onClick={stopAll}>
             <div className="tiempo-controles minimal">
                 <div role="button" tabIndex={0} className="mini-btn" title="Restar 15s" onClick={() => adjust(-15)}>
                     <Minus size={16} />
@@ -99,21 +150,21 @@ function ContenidoDescanso() {
         </div>
     );
 }
-
 export function openTiempoDescansoToast(seconds) {
     beeped = false;
 
     if (store) {
-        // Ya hay un toast real y vivo: solo actualizamos el store.
-        // NO volvemos a llamar a sileo.action -> no se crea un toast nuevo.
-        store.remaining = seconds;
-        store.total = seconds;
-        store.running = true;
         clearInterval(intervalId);
-        intervalId = setInterval(tick, 1000);
-        notify();
-        return realToastId;
+        intervalId = null;
+        if (realToastId) {
+            try { sileo.dismiss(realToastId); } catch (e) { }
+        }
+        store = null;
+        realToastId = null;
     }
+
+    store = { remaining: seconds, total: seconds, running: true };
+    intervalId = setInterval(tick, 1000);
 
     store = { remaining: seconds, total: seconds, running: true };
     clearInterval(intervalId);
@@ -140,4 +191,15 @@ export function openTiempoDescansoToast(seconds) {
     });
 
     return realToastId;
+}
+
+export function resetDescansoState() {
+    clearInterval(intervalId);
+    intervalId = null;
+    if (realToastId) {
+        try { sileo.dismiss(realToastId); } catch (e) { }
+    }
+    store = null;
+    realToastId = null;
+    listeners.clear();
 }

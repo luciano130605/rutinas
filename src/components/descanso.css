@@ -84,3 +84,49 @@
     color: var(--texto);
     border-color: var(--rojo);
 }
+
+
+.reloj-descanso-bg {
+    stroke: rgba(255, 255, 255, 0.18);
+    /* pista de fondo, ajustá al color de tu pill */
+}
+
+.reloj-descanso-fill {
+    stroke: currentColor;
+    /* toma el color del texto del título, queda prolijo en el pill */
+    transition: stroke-dashoffset 1s linear;
+}
+
+.reloj-descanso-mano {
+    stroke: currentColor;
+    transition: x2 1s linear, y2 1s linear;
+}
+
+@property --pct {
+    syntax: '<percentage>';
+    inherits: true;
+    initial-value: 0%;
+}
+
+.sileo-cont {
+    position: relative;
+    --pct: 0%;
+    --borde-grosor: 2px;
+    --borde-color: #e8c547;
+    /* el amarillo/oliva que se ve en tu screenshot */
+}
+
+.sileo-cont::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    /* toma el mismo radio que ya tenga tu toast */
+    padding: var(--borde-grosor);
+    background: conic-gradient(from -90deg, var(--borde-color) var(--pct), transparent var(--pct));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: --pct 1s linear;
+}
