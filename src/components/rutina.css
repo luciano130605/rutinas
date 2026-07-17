@@ -618,26 +618,6 @@
     align-items: center;
 }
 
-
-.record-badge {
-    display: flex;
-    align-items: center;
-    margin-left: 8px;
-    gap: 3px;
-    padding: 3px;
-    width: 60px;
-    left: 72%;
-    top: 120px;
-    border-radius: 20px;
-    font-size: .6rem;
-    position: absolute;
-    color: var(--dorado);
-    background: var(--dorado-transp);
-    vertical-align: middle;
-}
-
-
-
 .drag-handle {
     display: flex;
     align-items: center;
@@ -1688,8 +1668,7 @@
     display: none;
 }
 
-.card-dia-chip.activo {
-}
+.card-dia-chip.activo {}
 
 .card-dia-chip.es-hoy {
     border-color: var(--acento);
@@ -1698,4 +1677,55 @@
 .card-dia-chip.activo.es-hoy {
     background: var(--acento);
     color: var(--txt-btn);
+}
+
+
+
+.total-series-cont {
+    padding: 0 16px;
+    margin-top: 25px;
+    margin-bottom: 4px;
+}
+
+.total-series-span {
+    display: flex;
+    justify-content: space-between;
+    font-size: .9rem;
+    color: var(--texto-gris);
+    margin-bottom: 4px;
+}
+
+.total-series-fill {
+    width: 100%;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--borde);
+    overflow: hidden;
+}
+
+.badge-record {
+    position: absolute;
+    top: 5px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--dorado);
+    backdrop-filter: blur(30px);
+    background: var(--dorado-transp);
+    z-index: 1;
+    border: 1px solid var(--dorado);
+}
+
+.completado-badge {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding-left: 1rem;
+    color: var(--acento);
+
 }
