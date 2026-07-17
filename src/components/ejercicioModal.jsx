@@ -115,21 +115,20 @@ export default function EjercicioModal({
             </div>
           </div>
 
-          <Select
-            label="Parte del cuerpo"
-            value={filters.parteDelCuerpo}
-            options={filterOptions.partesDelCuerpo}
-            onChange={(v) => updateFilter("parteDelCuerpo", v)}
-          />
-          <Select
-            label="Equipamiento"
-            value={filters.equipamiento}
-            options={filterOptions.equipamientos}
-            onChange={(v) => updateFilter("equipamiento", v)}
-          />
-        </div>
+            <Select
+              label="Parte del cuerpo"
+              value={filters.parteDelCuerpo}
+              options={filterOptions.partesDelCuerpo}
+              onChange={(v) => updateFilter("parteDelCuerpo", v)}
+            />
+            <Select
+              label="Equipamiento"
+              value={filters.equipamiento}
+              options={filterOptions.equipamientos}
+              onChange={(v) => updateFilter("equipamiento", v)}
+            />
+          </div>
 
-        
 
         <div className="modal-results">
           {items.length === 0 && (
