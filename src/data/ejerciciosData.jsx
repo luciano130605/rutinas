@@ -18,10 +18,12 @@ const ejerciciosLocal = [
 
     /* espalda */
     { id: "0012", nombre: "Jalón al pecho - Agarre abierto (Maquina)", gif: "/gifs/jalon-pecho-abierto.gif", parteDelCuerpo: "Espalda", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"], equipamiento: "Maquinas" },
+    { id: "0012", nombre: "Jalón al pecho - Agarre neutro (Maquina)", gif: "/gifs/jalon-pecho-neutro.jpg", parteDelCuerpo: "Espalda", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"], equipamiento: "Maquinas" },
     { id: "0013", nombre: "Jalón al pecho - Agarre cerrado (Maquina)", gif: "/gifs/jalon-pecho-cerrado.gif", parteDelCuerpo: "Espalda", subMusculos: ["Biceps"], equipamiento: "Maquinas", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"] },
     { id: "0014", nombre: "Remo en punta (Maquina)", gif: "/gifs/remo-punta.gif", parteDelCuerpo: "Espalda", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"], equipamiento: "Maquinas" },
     { id: "0015", nombre: "Remo inclinado (Barra)", gif: "/gifs/remo-parado.gif", parteDelCuerpo: "Espalda", equipamiento: "Barra", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"] },
     { id: "0016", nombre: "Remo sentado - Agarre V (Maquina)", gif: "/gifs/remo-sentado-v.gif", parteDelCuerpo: "Espalda", equipamiento: "Maquinas", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"] },
+    
 
     /* cuadriceps */
     { id: "0017", nombre: "Sentadilla Hack (Maquina)", gif: "/gifs/sentadilla-hack.gif", parteDelCuerpo: "Cuadriceps", subMusculos: ["Gluteos", "Isquiotibiales"], equipamiento: "Maquinas" },
@@ -68,7 +70,6 @@ const ejerciciosLocal = [
     { id: "0043", nombre: "Elevacion lateral (Mancuernas)", gif: "/gifs/elevaciones-lat-manc.gif", parteDelCuerpo: "Hombros", equipamiento: "Mancuernas", subMusculos: [] },
     { id: "0044", nombre: "Elevacion lateral (Polea)", gif: "/gifs/elevaciones-lat-polea.jpg", parteDelCuerpo: "Hombros", equipamiento: "Polea", subMusculos: [] },
     { id: "0045", nombre: "Elevacion lateral a un brazo (Polea)", gif: "/gifs/elevaciones-lat-uno-polea.jpg", parteDelCuerpo: "Hombros", equipamiento: "Polea", subMusculos: [] },
-    /* falta*/
     { id: "0046", nombre: "Press militar (Maquina)", gif: "/gifs/press-militar-maq.gif", parteDelCuerpo: "Hombros", equipamiento: "Maquinas", subMusculos: ["Triceps"] },
     { id: "0047", nombre: "Press militar parado (Mancuernas)", gif: "/gifs/press-militar-mac-p.jpg", parteDelCuerpo: "Hombros", equipamiento: "Mancuernas", subMusculos: ["Triceps"] },
     { id: "0048", nombre: "Press militar sentado (Mancuernas)", gif: "/gifs/press-militar-mac-s.jpg", parteDelCuerpo: "Hombros", equipamiento: "Mancuernas", subMusculos: ["Triceps"] },
