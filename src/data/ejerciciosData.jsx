@@ -18,12 +18,13 @@ const ejerciciosLocal = [
 
     /* espalda */
     { id: "0012", nombre: "Jalón al pecho - Agarre abierto (Maquina)", gif: "/gifs/jalon-pecho-abierto.gif", parteDelCuerpo: "Espalda", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"], equipamiento: "Maquinas" },
-    { id: "0012", nombre: "Jalón al pecho - Agarre neutro (Maquina)", gif: "/gifs/jalon-pecho-neutro.jpg", parteDelCuerpo: "Espalda", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"], equipamiento: "Maquinas" },
+    { id: "0055", nombre: "Jalón al pecho - Agarre neutro (Maquina)", gif: "/gifs/jalon-pecho-neutro.jpg", parteDelCuerpo: "Espalda", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"], equipamiento: "Maquinas" },
     { id: "0013", nombre: "Jalón al pecho - Agarre cerrado (Maquina)", gif: "/gifs/jalon-pecho-cerrado.gif", parteDelCuerpo: "Espalda", subMusculos: ["Biceps"], equipamiento: "Maquinas", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"] },
     { id: "0014", nombre: "Remo en punta (Maquina)", gif: "/gifs/remo-punta.gif", parteDelCuerpo: "Espalda", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"], equipamiento: "Maquinas" },
     { id: "0015", nombre: "Remo inclinado (Barra)", gif: "/gifs/remo-parado.gif", parteDelCuerpo: "Espalda", equipamiento: "Barra", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"] },
     { id: "0016", nombre: "Remo sentado - Agarre V (Maquina)", gif: "/gifs/remo-sentado-v.gif", parteDelCuerpo: "Espalda", equipamiento: "Maquinas", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"] },
-    
+    { id: "0056", nombre: "Remo sentado - Agarre abierto (Maquina)", gif: "/gifs/remo-sentado-abierto.jpg", parteDelCuerpo: "Espalda", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"], equipamiento: "Maquinas" },
+
 
     /* cuadriceps */
     { id: "0017", nombre: "Sentadilla Hack (Maquina)", gif: "/gifs/sentadilla-hack.gif", parteDelCuerpo: "Cuadriceps", subMusculos: ["Gluteos", "Isquiotibiales"], equipamiento: "Maquinas" },
