@@ -1270,7 +1270,7 @@
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x;
-    background: var(--fondo-transp);
+    background: var(--fondo);
     border: 1px solid var(--borde);
     backdrop-filter: blur(12px);
     color: var(--texto);
