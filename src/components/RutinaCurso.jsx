@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Check, Plus, Copy, Repeat, Pencil, ChevronsUpDown, ChevronsDownUp, Pause, Play, Award, Dumbbell, Eye } from 'lucide-react';
+import { X, Check, Plus, Copy, Repeat, Pencil, ChevronsUpDown, ChevronsDownUp, Pause, Play, Award, Dumbbell, Eye, CheckCircle2 } from 'lucide-react';
 import { formatElapsed } from '../utils/time';
 import EjercicioModal from './ejercicioModal';
 import "./rutina.css"
@@ -18,6 +18,7 @@ export default function RutinaCurso({
   const [, forceTick] = React.useState(0);
   const [gifPreview, setGifPreview] = React.useState(null);
   const [gifFailedIds, setGifFailedIds] = React.useState(new Set());
+  const exerciseRefs = React.useRef({});
 
   React.useEffect(() => {
     if (s?.paused) return;
@@ -72,6 +73,52 @@ export default function RutinaCurso({
     return map;
   }, [history]);
 
+  const { totalSets, doneSets } = React.useMemo(() => {
+    let total = 0, done = 0;
+    s.exercises.forEach(ex => {
+      total += ex.sets.length;
+      done += ex.sets.filter(st => st.done).length;
+    });
+    return { totalSets: total, doneSets: done };
+  }, [s.exercises]);
+  const globalPct = totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0;
+
+  const handleToggleSet = (exi, si) => {
+    const ex = s.exercises[exi];
+    const set = ex.sets[si];
+    const willComplete = !set.done && ex.sets.every((st, idx) => idx === si || st.done);
+
+    onToggleSet(exi, si);
+
+    if (!willComplete) return;
+
+    const currentKey = ex.id ?? exi;
+
+    let nextKey = null;
+    for (let i = exi + 1; i < s.exercises.length; i++) {
+      const nextEx = s.exercises[i];
+      const isDone = nextEx.sets.length > 0 && nextEx.sets.every(st => st.done);
+      if (!isDone) {
+        nextKey = nextEx.id ?? i;
+        break;
+      }
+    }
+
+    setCollapsedIds(prev => {
+      const next = new Set(prev);
+      next.add(currentKey);
+      if (nextKey !== null) next.delete(nextKey);
+      return next;
+    });
+
+    if (nextKey !== null) {
+      setTimeout(() => {
+        const node = exerciseRefs.current[nextKey];
+        if (node) node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 250);
+    }
+  };
+
   return (
     <>
       <div className="header-cont">
@@ -94,6 +141,25 @@ export default function RutinaCurso({
         ) : <div style={{ width: 40 }}></div>}
       </div>
 
+      {totalSets > 0 && (
+        <div className='total-series-cont'>
+          <div className='total-series-span'>
+            <span>{doneSets}/{totalSets} series</span>
+            <span>{globalPct}%</span>
+          </div>
+          <div className='total-series-fill'>
+            <div
+              style={{
+                width: `${globalPct}%`,
+                height: '100%',
+                background: 'var(--acento)',
+                transition: 'width .25s ease'
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="page-cont top">
         {s.exercises.map((ex, exi) => {
           const key = ex.id ?? exi;
@@ -103,12 +169,33 @@ export default function RutinaCurso({
           const gif = ex.gif ?? ex.gifUrl;
           const gifFailed = gifFailedIds.has(key);
 
+          const doneInEx = ex.sets.filter(st => st.done).length;
+          const isExDone = ex.sets.length > 0 && doneInEx === ex.sets.length;
+          const record = records.get(nombre); // NUEVO: separado para reusar abajo
+
           return (
-            <div key={key} className="rutina-card">
+            <div
+              key={key}
+              className="rutina-card"
+              ref={(node) => { exerciseRefs.current[key] = node; }}
+              style={{
+                position: 'relative',
+                ...(isExDone ? {
+                  borderColor: 'var(--acento)',
+                } : {})
+              }}
+            >
+              {record && (
+                <div
+                  title={`Récord: ${record.weight}kg × ${record.reps}`}
+                  className='badge-record'
+                >
+                  <Award size={12} />
+                  {record.weight}kg × {record.reps}
+                </div>
+              )}
+
               <div className="ejercicio-header" style={{ cursor: 'pointer' }}>
-
-
-
                 <div className='sub-cont-wrap' style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   {gif && !gifFailed && (
                     <img
@@ -134,17 +221,24 @@ export default function RutinaCurso({
                   <div onClick={() => toggleOne(key)} style={{ flex: 1 }}>
                     <div className='sub-cont'>
                       <h4>{nombre}</h4>
-                      {records.has(nombre) && (
-                        <div className="record-badge">
-                          <Award size={12} /> {records.get(nombre).weight}kg × {records.get(nombre).reps}
+                      {isExDone && (
+                        <div className="completado-badge">
+                          <CheckCircle2 size={12} /> Completo
                         </div>
                       )}
                     </div>
                     <div className="musculo">
                       {musculo}
+                      
+                      {isCollapsed && ex.sets.length > 0 && (
+                        <span className="musculo" style={{ marginLeft: 6 }}>
+                          {doneInEx}/{ex.sets.length} series
+                        </span>
+                      )}
                       {ex.rest ? (
                         <span className="descanso-badge">{ex.rest}s</span>
                       ) : null}
+
                     </div>
                   </div>
                 </div>
@@ -180,7 +274,7 @@ export default function RutinaCurso({
                         <input type="text" inputMode="decimal" value={set.weight} placeholder="0" onChange={e => onUpdateField(exi, si, 'weight', e.target.value)} />
                         <input type="text" inputMode="numeric" value={set.reps} placeholder="0" onChange={e => onUpdateField(exi, si, 'reps', e.target.value)} />
                         <div className='check-cont'>
-                          <button title='Terminado' className={`check ${set.done ? 'done' : ''}`} onClick={() => onToggleSet(exi, si)}>
+                          <button title='Terminado' className={`check ${set.done ? 'done' : ''}`} onClick={() => handleToggleSet(exi, si)}>
                             {<Check size={15} style={{ position: "relative", right: 1 }} />}
                           </button>
                         </div>
