@@ -221,11 +221,7 @@ export default function RutinaCurso({
                   <div onClick={() => toggleOne(key)} style={{ flex: 1 }}>
                     <div className='sub-cont'>
                       <h4>{nombre}</h4>
-                      {isExDone && (
-                        <div className="completado-badge">
-                          <CheckCircle2 size={12} /> Completo
-                        </div>
-                      )}
+                     
                     </div>
                     <div className="musculo">
                       {musculo}
