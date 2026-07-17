@@ -83,7 +83,7 @@ export default function RutinaCrear({
               <input type="text" placeholder="Ej. Lunes — Pecho y hombros" value={d.name} onChange={e => onChangeName(e.target.value)} />
             </div>
             {d.exercises.length > 0 && (
-              <div className="mini-btn" style={{ height: "45px", marginLeft: "5px" }} title={allCollapsed ? 'Expandir todo' : 'Colapsar todo'} onClick={toggleAll}>
+              <div className="btn" style={{  marginLeft: "5px" }} title={allCollapsed ? 'Expandir todo' : 'Colapsar todo'} onClick={toggleAll}>
                 {allCollapsed ? <ChevronsUpDown size={16} /> : <ChevronsDownUp size={16} />}
               </div>
             )}
