@@ -945,7 +945,7 @@
     display: flex;
     align-items: center;
     height: 12px;
-    width: 40%;
+    width: 35%;
     position: relative;
     top: 9px;
     padding: 10px 14px;
@@ -988,7 +988,7 @@
     position: relative;
     display: flex;
     width: 100%;
-    right: 130px;
+    right: 145px;
     flex-direction: column;
     gap: 5px;
 }
@@ -1013,7 +1013,7 @@
     border-radius: 7px;
     padding: 8px 10px;
     color: var(--texto);
-    font-size: .8rem;
+    font-size: .7rem;
     font-family: 'Inter', sans-serif;
     cursor: pointer;
     transition: border-color 0.15s ease;
@@ -1059,7 +1059,7 @@
     max-height: 200px;
     overflow-y: auto;
     margin: 0;
-    width: 160%;
+    width: 100%;
     padding: 4px;
     list-style: none;
     background: var(--fondo);
