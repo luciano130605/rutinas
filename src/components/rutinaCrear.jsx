@@ -145,7 +145,7 @@ export default function RutinaCrear({
                 </div>
               </div>
 
-              {!isCollapsed && (
+               {!isCollapsed && (
                 <div className="ejercicio-inputs">
                   {(() => {
                     const isBodyweight = ex.equipment === 'P. corporal';
