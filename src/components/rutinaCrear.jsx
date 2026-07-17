@@ -93,7 +93,7 @@ export default function RutinaCrear({
               <input type="text" placeholder="Ej. Lunes — Pecho y hombros" value={d.name} onChange={e => onChangeName(e.target.value)} />
             </div>
             {d.exercises.length > 0 && (
-              <div className="btn" style={{ marginLeft: "5px" }} title='Descanso para todos' onClick={openRestToastAll}>
+              <div className="btn" style={{ marginLeft: "15px" }} title='Descanso para todos' onClick={openRestToastAll}>
                 <Timer size={16} />
               </div>
             )}
