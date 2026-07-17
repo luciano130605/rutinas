@@ -1,7 +1,6 @@
 import React from 'react';
 import { X, Check, Plus, Copy, Repeat, Pencil, ChevronsUpDown, ChevronsDownUp, Pause, Play, Award, Dumbbell, Eye } from 'lucide-react';
 import { formatElapsed } from '../utils/time';
-import TiempoDescanso from './TiempoDescanso';
 import EjercicioModal from './ejercicioModal';
 import "./rutina.css"
 import { resetDescansoState } from './TiempoDescansoToast';
