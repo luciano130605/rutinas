@@ -136,7 +136,20 @@ export default function RutinaCrear({
                   {ex.sets.map((s, si) => (
                     <div key={s.id} className="ejercicio-inputs-header">
                       <span className="ejercicio-num">{si + 1}</span>
-                      <input type="text" inputMode="decimal" value={s.weight} placeholder="0" onChange={e => onUpdateSetField(exi, si, 'weight', e.target.value)} />
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={s.weight}
+                        placeholder="0"
+                        onChange={e =>
+                          onUpdateSetField(
+                            exi,
+                            si,
+                            'weight',
+                            e.target.value.replace(',', '.')
+                          )
+                        }
+                      />
                       <input type="text" inputMode="numeric" value={s.reps} placeholder="0" onChange={e => onUpdateSetField(exi, si, 'reps', e.target.value)} />
                       <button className="check right" onClick={() => onRemoveSet(exi, si)}><X size={14} /></button>
                     </div>
