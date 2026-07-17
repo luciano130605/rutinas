@@ -182,14 +182,14 @@
 .card-musc {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 3px;
 }
 
 .musc-span {
     background: var(--fondo-transp);
     color: var(--texto-gris);
-    font-size: .6rem;
-    padding: 4px 9px;
+    font-size: .5rem;
+    padding: 4px 8px;
     border-radius: 20px;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -1556,7 +1556,7 @@
 .notif-pop {
     position: absolute;
     top: calc(100% + 14px);
-    right: 44px;
+    right: 0%;
     z-index: 50;
     width: 270px;
     background: var(--componente);
@@ -1676,6 +1676,7 @@
     background: var(--fondo-transp);
     color: var(--texto-gris);
     font-size: .6rem;
+    max-height: 12px;
     padding: 4px 9px;
     border-radius: 20px;
     text-transform: uppercase;
@@ -1688,9 +1689,6 @@
 }
 
 .card-dia-chip.activo {
-    background: var(--acento-transp);
-    color: var(--acento);
-    font-weight: 700;
 }
 
 .card-dia-chip.es-hoy {
