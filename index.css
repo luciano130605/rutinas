@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root {
+  --fondo: #171717;
+  --txt-btn: #171717;
+  --texto-btn: #171717;
+  --fondo-transp: #17171785;
+  --componente: #24262b;
+  --componente-transp: #24262b63;
+  --texto: #f2f1ec;
+  --dorado: #efb810;
+  --dorado-transp: #d0a5242e;
+  /* --acento: #c6ff34;
+  --acento-transp: rgba(197, 255, 52, 0.675); */
+  --acento2: #b2d5e5;
+  --borde: #303339;
+  --borde-hover: #4c4f57;
+  --texto-gris: #9a9ca3;
+  --texto-gris-oscuro: #65676e;
+  --rojo: #ff5a4a;
+  --rojo-transp: rgba(201, 69, 57, 0.293);
+}
+
+
+html {
+  background: var(--fondo);
+  color: var(--texto);
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 84px;
+  overflow-x: hidden;
+}
+
+
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+  font-family: 'Oswald'
+}
+
+
+
+.acento-naranja {
+  --acento: #ff9a4a;
+  --acento-transp: rgba(255, 154, 74, 0.675);
+}
+
+.acento-violeta {
+  --acento: #b28aff;
+  --acento-transp: rgba(178, 138, 255, 0.675);
+}
+
+
+.acento-verde {
+  --acento: #c6ff34;
+  --acento-transp: rgba(197, 255, 52, 0.675);
+
+}
+
+.acento-celeste {
+  --acento: rgb(178, 213, 229);
+  --acento-transp: rgba(178, 213, 229, 0.675);
+
+}
+
+html.claro {
+  --fondo: rgb(234, 229, 227);
+  --fondo-transp: rgba(234, 229, 227, 0.522);
+  --componente: rgb(248, 251, 248);
+  --componente-transp: rgba(248, 251, 248, 0.388);
+  --texto: #171717;
+  --borde: #dbdde0;
+  --borde-hover: #c9cacb;
+  --texto-gris: #757272;
+  --texto-gris-oscuro: rgb(143, 146, 157);
+  --rojo: #ff5a4a;
+  --rojo-transp: rgba(201, 69, 57, 0.293);
+}
+
+html {
+  transition: background 0.2s ease;
+}
+
+html.claro body {
+  background: var(--fondo);
+}

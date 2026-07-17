@@ -1,0 +1,149 @@
+.historial-stats {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.historial-stats div {
+    font-size: .7rem;
+    color: var(--texto-gris);
+}
+
+.historial-stats b {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--texto);
+    font-size: 1rem;
+}
+
+.historial-detalle {
+    display: flex;
+    justify-content: space-between;
+    font-size: .8rem;
+    color: var(--texto-gris);
+    padding: 4px 0;
+    font-family: 'JetBrains Mono', monospace;
+
+}
+
+.historial-detalle span:first-child {
+    color: var(--texto-gris-oscuro);
+}
+
+.stats-cont {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    margin-bottom: 14px;
+}
+
+.stats-cont-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--componente);
+    border-radius: 12px;
+    border: 1px solid var(--borde);
+    padding: 10px 14px;
+    max-width: 70px;
+    width: 100%;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.stats-cont-item b {
+    display: block;
+    color: var(--texto);
+    font-size: 1rem;
+}
+
+.stats-cont-item span {
+    font-size: .6rem;
+    color: var(--texto-gris);
+}
+
+.hist-search-row {
+    display: flex;
+    gap: 8px;
+    padding: 10px 0;
+    margin-bottom: 8px;
+}
+
+.hist-search-input {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hist-search-input input:hover {
+    border-color: var(--borde-hover) !important;
+}
+
+.hist-search-input input:focus {
+    border-color: var(--acento) !important;
+}
+
+.hist-search-input input {
+    flex: 1;
+    border-radius: 10px;
+    background: var(--componente);
+    border: 1px solid var(--borde);
+    padding: 10px 0;
+    padding-left: 1.5rem;
+    outline: none;
+    color: var(--texto);
+}
+
+.hist-active-range {
+    font-size: .7rem;
+    margin-bottom: 1rem;
+    color: var(--texto-gris);
+    border: 1px solid var(--borde);
+    width: 10%;
+    position: absolute;
+    left: 80%;
+    border-radius: 8px;
+    backdrop-filter: blur(12px);
+    background: var(--componente-transp);
+    padding: 10px;
+}
+
+.icon {
+    padding-left: .3rem;
+    position: absolute;
+    color: var(--texto-gris);
+}
+
+.hist-card-compact {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    width: 75%;
+    position: relative;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--componente);
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.hist-card-main h4 {
+    margin: 0 0 2px;
+    font-family: 'Oswald';
+    text-transform: uppercase;
+    color: var(--texto);
+    font-size: 1rem;
+}
+
+.hist-card-meta {
+    display: flex;
+    gap: 5px;
+    font-size: .7rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--texto-gris);
+    flex-wrap: wrap;
+}

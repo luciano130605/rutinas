@@ -1,0 +1,20 @@
+.toast {
+    background: var(--acento);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--txt-btn);
+    border-radius: 5px;
+    border: 1px solid var(--acento);
+    padding: 10px 16px;
+    width: fit-content;
+    max-width: 90%;
+    position: fixed;
+    left: 50%;
+    bottom: 50px;
+    transform: translateX(-50%);
+    font-size: .8rem;
+    font-weight: 600;
+    z-index: 999;
+    transition: bottom .3s ease;
+}

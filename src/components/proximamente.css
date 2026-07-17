@@ -1,0 +1,52 @@
+.proximamente-build {
+    background: var(--componente);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 6px 0 18px;
+}
+
+.proximamente-feature {
+    background: var(--componente);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: border-color .3s;
+}
+
+.proximamente-feature:hover {
+    border-color: var(--borde-hover);
+}
+
+.proximamente-feature-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: var(--fondo-transp);
+    color: var(--acento);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.proximamente-feature h4 {
+    margin: 0 0 4px;
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    font-size: .9rem;
+    letter-spacing: 0.01em;
+    color: var(--texto);
+}
+
+.proximamente-feature p {
+    margin: 0;
+    font-size: .75rem;
+    line-height: 1.5;
+    font-family: 'Inter', sans-serif;
+    color: var(--texto-gris);
+}
