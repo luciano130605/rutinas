@@ -1,14 +1,16 @@
-import React, { useMemo } from 'react';
-import { Plus, Bell } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Plus, Bell, Dumbbell, ChevronRight } from 'lucide-react';
 import "./rutina.css"
 
-export default function RutinaPage({ routines, reminders, onNewRoutine, onSelectRoutine }) {
+const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+
+export default function RutinaPage({ routines = [], onNewRoutine, onSelectRoutine }) {
   const hoy = new Date().getDay();
+  const [showHoy, setShowHoy] = useState(false);
 
   const rutinasDeHoy = useMemo(() => {
-    if (!reminders) return [];
-    return routines.filter(r => reminders[r.id] && reminders[r.id].day === hoy);
-  }, [routines, reminders, hoy]);
+    return (routines ?? []).filter(r => r.days?.includes(hoy));
+  }, [routines, hoy]);
 
   return (
     <>
@@ -17,22 +19,64 @@ export default function RutinaPage({ routines, reminders, onNewRoutine, onSelect
           <h1 className='header-titulo'>Rutinas</h1>
           <div className="header-sub">{routines.length} guardada{routines.length !== 1 ? 's' : ''}</div>
         </div>
-        <div className="btn acento" title='Agregar rutina' onClick={onNewRoutine}><Plus size={20} /></div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+          {rutinasDeHoy.length > 0 && (
+            <>
+              <div
+                className={`btn ${showHoy ? 'activo' : ''}`}
+                title='Rutina de hoy'
+                style={{ position: 'relative' }}
+                onClick={() => setShowHoy(v => !v)}
+              >
+                <Bell size={20} />
+                <span className="notif-dot" />
+              </div>
+
+              {showHoy && (
+                <>
+                  <div className="notif-backdrop" onClick={() => setShowHoy(false)} />
+                  <div className="notif-pop" onClick={(e) => e.stopPropagation()}>
+
+                    <div className="notif-pop-head">
+                      <div className="notif-pop-icon"><Bell size={14} /></div>
+                      <div>
+                        <div className="notif-pop-title">Hoy toca</div>
+                        <div className="notif-pop-sub">
+                          {rutinasDeHoy.length} rutina{rutinasDeHoy.length !== 1 ? 's' : ''} programada{rutinasDeHoy.length !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="notif-pop-list">
+                      {rutinasDeHoy.map(r => (
+                        <div
+                          key={r.id}
+                          title="Ir a la rutina"
+                          className="notif-pop-item"
+                          onClick={() => { setShowHoy(false); onSelectRoutine(r.id); }}
+                        >
+                          <div className="notif-pop-item-icon"><Dumbbell size={14} /></div>
+                          <div className="notif-pop-item-info">
+                            <span className="notif-pop-title">{r.name}</span>
+                            <span className="notif-pop-sub">
+                              {r.exercises.length} ejercicio{r.exercises.length !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <ChevronRight size={15} className="notif-pop-item-chev" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+          <div className="btn acento" title='Agregar rutina' onClick={onNewRoutine}><Plus size={20} /></div>
+        </div>
       </div>
 
       <div className="page-cont">
-        {rutinasDeHoy.length > 0 && (
-          <div
-            className="rutina-card"
-            style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}
-          >
-            <Bell size={16} />
-            <span>
-              Hoy toca: {rutinasDeHoy.map(r => r.name).join(', ')} · {reminders[rutinasDeHoy[0].id].time}
-            </span>
-          </div>
-        )}
-
         {routines.length === 0 ? (
           <div className="page-sin">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -47,11 +91,40 @@ export default function RutinaPage({ routines, reminders, onNewRoutine, onSelect
           </div>
         ) : routines.map(r => {
           const muscles = [...new Set(r.exercises.map(e => e.muscle))].slice(0, 4);
+          const esHoy = r.days?.includes(hoy);
           return (
-            <div key={r.id} className="rutina-card" onClick={() => onSelectRoutine(r.id)}>
+            <div
+              key={r.id}
+              className="rutina-card"
+              role="button"
+              tabIndex={0}
+              onClick={() => onSelectRoutine(r.id)}
+              onKeyDown={(e) => e.key === 'Enter' && onSelectRoutine(r.id)}
+              style={{ position: 'relative' }}
+            >
+              {esHoy && <span className="dot-hoy" title="Hoy toca" />}
               <h3>{r.name}</h3>
               <div className="card-ejercicios">{r.exercises.length} ejercicio{r.exercises.length !== 1 ? 's' : ''}</div>
-              <div className="card-musc">{muscles.map(m => <span key={m} className="musc-span">{m}</span>)}</div>
+
+
+
+              <div style={{ display: "flex", gap: "10px" }}>
+
+                {r.days?.length > 0 && (
+                  <div className="card-dias">
+                    {DIAS.map((d, i) => (
+                      <span
+                        key={i}
+                        className={`card-dia-chip ${r.days.includes(i) ? 'activo' : 'no'} ${i === hoy ? 'es-hoy' : ''}`}
+                      >
+                        {d}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="card-musc">{muscles.map(m => <span key={m} className="musc-span">{m}</span>)}</div>
+              </div>
             </div>
           );
         })}
