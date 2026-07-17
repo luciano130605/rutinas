@@ -145,7 +145,7 @@ export default function RutinaCrear({
                 </div>
               </div>
 
-               {!isCollapsed && (
+              {!isCollapsed && (
                 <div className="ejercicio-inputs">
                   {(() => {
                     const isBodyweight = ex.equipment === 'P. corporal';
@@ -153,24 +153,23 @@ export default function RutinaCrear({
                       <>
                         <div className="ejercicio-inputs-header">
                           <span></span>
-                          {!isBodyweight && <span>Kg</span>}
+                          <span>Kg</span>
                           <span>Reps</span>
                           <span></span>
                         </div>
                         {ex.sets.map((s, si) => (
                           <div key={s.id} className="ejercicio-inputs-header">
                             <span className="ejercicio-num">{si + 1}</span>
-                            {!isBodyweight && (
-                              <input
-                                type="text"
-                                inputMode="decimal"
-                                value={s.weight}
-                                placeholder="0"
-                                onChange={e =>
-                                  onUpdateSetField(exi, si, 'weight', e.target.value.replace(',', '.'))
-                                }
-                              />
-                            )}
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              value={s.weight}
+                              disabled={isBodyweight}
+                              placeholder="0"
+                              onChange={e =>
+                                onUpdateSetField(exi, si, 'weight', e.target.value.replace(',', '.'))
+                              }
+                            />
                             <input
                               type="text"
                               inputMode="numeric"
