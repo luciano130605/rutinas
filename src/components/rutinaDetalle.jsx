@@ -227,7 +227,7 @@ export default function RutinaDetalle({
         )}
 
         <div style={{ height: 10 }}></div>
-        <button className="btns primario" onClick={onStartSession}>Empezar rutina</button>
+        <button className="btns primario fixed" onClick={onStartSession}>Empezar rutina</button>
       </div >
 
       {statsOpen && (
