@@ -1,4 +1,3 @@
-// components/TiempoDescansoToast.jsx
 import React, { useEffect, useState } from 'react';
 import { sileo } from "sileo";
 import { Minus, Plus, Pause, Play, Timer } from 'lucide-react';

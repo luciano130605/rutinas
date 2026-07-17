@@ -4,7 +4,7 @@ import { formatElapsed } from '../utils/time';
 import TiempoDescanso from './TiempoDescanso';
 import EjercicioModal from './ejercicioModal';
 import "./rutina.css"
-import { resetDescansoState } from './tiempoDescansoToast';
+import { resetDescansoState } from './TiempoDescansoToast';
 
 export default function RutinaCurso({
   session, restTimer, restDefault, history = [],
