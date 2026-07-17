@@ -321,7 +321,7 @@ export default function RutinaDetalle({
       <div className="page-cont top">
         <h1>{routine.name}</h1>
 
-        <div className="header-sub" style={{ marginTop: 2, marginBottom: 12 }}>
+        <div className="header-sub" style={{ marginTop: 2, marginBottom: 12, fontSize:".6rem" }}>
           {lastEntry
             ? `Última vez: ${formatRelative(lastEntry.date)} · ${lastEntry.totalSets} series`
             : 'Todavía no registraste ninguna sesión de esta rutina'}
