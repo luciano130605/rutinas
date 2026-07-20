@@ -3,7 +3,7 @@ import { X, Check, Plus, Copy, Repeat, Pencil, ChevronsUpDown, ChevronsDownUp, P
 import { formatElapsed } from '../utils/time';
 import EjercicioModal from './ejercicioModal';
 import "./rutina.css"
-import { resetDescansoState } from './TiempoDescansoToast';
+import { DescansoBotonFlotante, resetDescansoState } from './TiempoDescansoToast';
 
 export default function RutinaCurso({
   session, restTimer, restDefault, history = [],
@@ -121,6 +121,7 @@ export default function RutinaCurso({
 
   return (
     <>
+      <DescansoBotonFlotante />
       <div className="header-cont">
         <div className="btn" onClick={onCancel}><X size={18} /></div>
         <div>
@@ -221,11 +222,11 @@ export default function RutinaCurso({
                   <div onClick={() => toggleOne(key)} style={{ flex: 1 }}>
                     <div className='sub-cont'>
                       <h4>{nombre}</h4>
-                     
+
                     </div>
                     <div className="musculo">
                       {musculo}
-                      
+
                       {isCollapsed && ex.sets.length > 0 && (
                         <span className="musculo" style={{ marginLeft: 6 }}>
                           {doneInEx}/{ex.sets.length} series
