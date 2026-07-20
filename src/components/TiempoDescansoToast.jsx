@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { sileo } from "sileo";
 import { Minus, Plus, Pause, Play, Timer } from 'lucide-react';
 import { formatElapsed } from '../utils/time';
@@ -8,48 +9,130 @@ import "./rutina.css";
 
 const stopAll = (e) => e.stopPropagation();
 
-let store = null;
+let store = null;         // { total, running, endTime, pausedRemaining }
+let toastOpen = false;    // si el toast está actualmente visible
 let intervalId = null;
 let beeped = false;
-let realToastId = null; // el id de VERDAD que devuelve sileo, no uno inventado por nosotros
+let realToastId = null;
+let wakeLock = null;
 const listeners = new Set();
 
 function notify() {
     listeners.forEach(fn => fn());
 }
 
+// --- Núcleo: tiempo restante calculado contra un timestamp real ---
+function getRemaining() {
+    if (!store) return 0;
+    if (!store.running) return store.pausedRemaining;
+    return Math.max(0, Math.round((store.endTime - Date.now()) / 1000));
+}
+
 function tick() {
-    if (!store || !store.running) return;
-    store.remaining = Math.max(0, store.remaining - 1);
-    if (store.remaining <= 0 && !beeped) {
+    if (!store) return;
+    const remaining = getRemaining();
+    if (remaining <= 0 && !beeped) {
         beeped = true;
         playBeep();
-        sileo.success({ title: "Tiempo terminado", duration: 3000 }); // 👈 nuevo
+        sileo.success({ title: "Tiempo terminado", duration: 3000 });
     }
     notify();
 }
 
 function adjust(delta) {
     if (!store) return;
-    store.remaining = Math.max(0, store.remaining + delta);
-    store.total = Math.max(store.total, store.remaining);
-    if (store.remaining > 0) beeped = false;
+    if (store.running) {
+        store.endTime += delta * 1000;
+        const remaining = getRemaining();
+        store.total = Math.max(store.total, remaining);
+        if (remaining > 0) beeped = false;
+    } else {
+        store.pausedRemaining = Math.max(0, store.pausedRemaining + delta);
+        store.total = Math.max(store.total, store.pausedRemaining);
+        if (store.pausedRemaining > 0) beeped = false;
+    }
     notify();
 }
 
 function togglePause() {
     if (!store) return;
-    store.running = !store.running;
+    if (store.running) {
+        store.pausedRemaining = getRemaining();
+        store.running = false;
+    } else {
+        store.endTime = Date.now() + store.pausedRemaining * 1000;
+        store.running = true;
+    }
     notify();
+}
+
+// --- Wake lock (best-effort, no rompe nada si el navegador no lo soporta) ---
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+        }
+    } catch (e) { /* silencioso: iOS viejo, permisos, etc. */ }
+}
+function releaseWakeLock() {
+    try { wakeLock && wakeLock.release(); } catch (e) { }
+    wakeLock = null;
+}
+
+// --- Crear / mostrar / ocultar el toast (independiente del timer) ---
+function createToast() {
+    realToastId = sileo.action({
+        title: <TituloDescanso />,
+        duration: null,
+        autopilot: false,
+        description: <ContenidoDescanso />,
+        button: {
+            title: "Cancelar",
+            className: "btns eliminar",
+            onClick: dismiss,
+        },
+        styles: {
+            container: "sileo-cont",
+            title: "sileo-title",
+            description: "sileo-description",
+            button: "btns eliminar sileo desc",
+        },
+    });
+}
+
+function hideToast() {
+    if (realToastId) {
+        try { sileo.dismiss(realToastId); } catch (e) { }
+        realToastId = null;
+    }
+    toastOpen = false;
+    notify();
+}
+
+function showToast() {
+    if (!store) return;
+    if (realToastId) {
+        try { sileo.dismiss(realToastId); } catch (e) { }
+        realToastId = null;
+    }
+    createToast();
+    toastOpen = true;
+    notify();
+}
+
+function toggleToast() {
+    if (toastOpen) hideToast(); else showToast();
 }
 
 function dismiss() {
     clearInterval(intervalId);
     intervalId = null;
     store = null;
+    toastOpen = false;
+    releaseWakeLock();
     listeners.clear();
     if (realToastId) {
-        sileo.dismiss(realToastId); // ahora sí, el id real
+        try { sileo.dismiss(realToastId); } catch (e) { }
     }
     realToastId = null;
 }
@@ -64,6 +147,16 @@ function useDescansoStore() {
     return store;
 }
 
+// Recalcula apenas la pestaña vuelve a estar visible (se pone al día al toque)
+if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            tick();
+            if (store && store.running) requestWakeLock();
+        }
+    });
+}
+
 function RelojDescanso({ remaining, total, size = 14 }) {
     const stroke = 1.6;
     const radius = (size - stroke) / 2;
@@ -72,7 +165,6 @@ function RelojDescanso({ remaining, total, size = 14 }) {
     const elapsedPct = total > 0 ? Math.min(100, Math.max(0, ((total - remaining) / total) * 100)) : 0;
     const offset = circumference * (1 - elapsedPct / 100);
 
-    // la "agujita" gira en sentido horario a medida que pasa el tiempo
     const angleDeg = -90 + (elapsedPct / 100) * 360;
     const angleRad = (angleDeg * Math.PI) / 180;
     const handLen = radius * 0.6;
@@ -83,11 +175,7 @@ function RelojDescanso({ remaining, total, size = 14 }) {
 
     return (
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="reloj-descanso">
-            <circle
-                cx={cx} cy={cy} r={radius}
-                fill="none" strokeWidth={stroke}
-                className="reloj-descanso-bg"
-            />
+            <circle cx={cx} cy={cy} r={radius} fill="none" strokeWidth={stroke} className="reloj-descanso-bg" />
             <circle
                 cx={cx} cy={cy} r={radius}
                 fill="none" strokeWidth={stroke}
@@ -97,12 +185,7 @@ function RelojDescanso({ remaining, total, size = 14 }) {
                 transform={`rotate(-90 ${cx} ${cy})`}
                 className="reloj-descanso-fill"
             />
-            <line
-                x1={cx} y1={cy} x2={hx} y2={hy}
-                strokeWidth={stroke}
-                strokeLinecap="round"
-                className="reloj-descanso-mano"
-            />
+            <line x1={cx} y1={cy} x2={hx} y2={hy} strokeWidth={stroke} strokeLinecap="round" className="reloj-descanso-mano" />
         </svg>
     );
 }
@@ -110,28 +193,31 @@ function RelojDescanso({ remaining, total, size = 14 }) {
 function TituloDescanso() {
     const s = useDescansoStore();
     if (!s) return null;
+    const remaining = getRemaining();
     return (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <RelojDescanso remaining={s.remaining} total={s.total} /> {formatElapsed(s.remaining * 1000)}
+            <RelojDescanso remaining={remaining} total={s.total} /> {formatElapsed(remaining * 1000)}
         </span>
     );
 }
+
 function ContenidoDescanso() {
     const s = useDescansoStore();
     const rootRef = React.useRef(null);
+    const remaining = s ? getRemaining() : 0;
 
     React.useEffect(() => {
         if (!s || !rootRef.current) return;
         const cont = rootRef.current.closest('.sileo-cont');
         if (!cont) return;
         const pct = s.total > 0
-            ? Math.min(100, Math.max(0, ((s.total - s.remaining) / s.total) * 100))
+            ? Math.min(100, Math.max(0, ((s.total - remaining) / s.total) * 100))
             : 0;
         cont.style.setProperty('--pct', `${pct}%`);
-    }, [s?.remaining, s?.total]);
+    }, [remaining, s?.total]);
 
     if (!s) return null;
-    const { remaining, running } = s;
+    const { running } = s;
 
     return (
         <div ref={rootRef} className="tiempo-toast" onPointerDown={stopAll} onMouseDown={stopAll} onClick={stopAll}>
@@ -149,7 +235,31 @@ function ContenidoDescanso() {
         </div>
     );
 }
+
+// --- Botón circular fijo: abre/cierra el toast sin tocar el timer ---
+export function DescansoBotonFlotante() {
+    const s = useDescansoStore();
+    
+    if (!s) return null;
+
+    const remaining = getRemaining();
+
+    const btn = (
+        <button
+            type="button"
+            className="btn acento descanso-fab"
+            title={toastOpen ? 'Ocultar temporizador de descanso' : 'Mostrar temporizador de descanso'}
+            onClick={toggleToast}
+        >
+            <Timer size={20} />
+        </button>
+    );
+
+    return ReactDOM.createPortal(btn, document.body);
+}
+
 export default function openTiempoDescansoToast(seconds) {
+    console.log('[descanso] abriendo toast, seconds=', seconds);
     beeped = false;
 
     if (store) {
@@ -162,43 +272,17 @@ export default function openTiempoDescansoToast(seconds) {
         realToastId = null;
     }
 
-    store = { remaining: seconds, total: seconds, running: true };
+    store = { total: seconds, running: true, endTime: Date.now() + seconds * 1000, pausedRemaining: seconds };
     intervalId = setInterval(tick, 1000);
 
-    store = { remaining: seconds, total: seconds, running: true };
-    clearInterval(intervalId);
-    intervalId = setInterval(tick, 1000);
-
-    // sileo NO soporta "id" como opción -> siempre genera uno propio.
-    // Lo capturamos acá para poder cerrar ESTE toast puntual después.
-    realToastId = sileo.action({
-        title: <TituloDescanso />,
-        duration: null, // según la doc de sileo: null = sticky (no se auto-cierra)
-        autopilot: false, // evita que se colapse/expanda solo
-        description: <ContenidoDescanso />,
-        button: {
-            title: "Cancelar",
-            className: "btns eliminar",
-            onClick: dismiss,
-        },
-        styles: {
-            container: "sileo-cont",
-            title: "sileo-title",
-            description: "sileo-description",
-            button: "btns eliminar sileo desc",
-        },
-    });
+    createToast();
+    toastOpen = true;
+    requestWakeLock();
+    notify();
 
     return realToastId;
 }
 
 export function resetDescansoState() {
-    clearInterval(intervalId);
-    intervalId = null;
-    if (realToastId) {
-        try { sileo.dismiss(realToastId); } catch (e) { }
-    }
-    store = null;
-    realToastId = null;
-    listeners.clear();
+    dismiss();
 }
