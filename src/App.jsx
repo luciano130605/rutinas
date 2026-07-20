@@ -17,7 +17,7 @@ import "../index.css"
 import Ajustes from './components/ajustes';
 import ProximamentePage from './components/proximamente';
 import { openDescansoToast } from './components/descansoToastModal';
-import openTiempoDescansoToast from './components/TiempoDescansoToast';
+import openTiempoDescansoToast, { resetDescansoState } from './components/TiempoDescansoToast';
 
 export default function App() {
   const [screen, setScreen] = useState('routines');
@@ -423,11 +423,18 @@ export default function App() {
       return next;
     });
 
+    if (willComplete) {
+      const secondsToRest = ex.rest ? parseInt(ex.rest, 10) : restDefault;
+      startRest(secondsToRest);
+    } else {
+      resetDescansoState(); // se desmarcó el tilde -> cortamos el descanso
+    }
+
     if (secondsToRest !== null) {
       startRest(secondsToRest);
     }
   }
-  
+
   function updateLiveField(exi, si, field, value) {
     const clean = value.replace(/[^0-9.]/g, '');
     setSession(s => {
