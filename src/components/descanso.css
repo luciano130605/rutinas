@@ -87,7 +87,7 @@
 
 
 .reloj-descanso-bg {
-    stroke: rgba(255, 255, 255, 0.18);
+    stroke: var(--borde);
     /* pista de fondo, ajustá al color de tu pill */
 }
 
@@ -108,25 +108,10 @@
     initial-value: 0%;
 }
 
-.sileo-cont {
-    position: relative;
-    --pct: 0%;
-    --borde-grosor: 2px;
-    --borde-color: #e8c547;
-    /* el amarillo/oliva que se ve en tu screenshot */
-}
 
-.sileo-cont::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    /* toma el mismo radio que ya tenga tu toast */
-    padding: var(--borde-grosor);
-    background: conic-gradient(from -90deg, var(--borde-color) var(--pct), transparent var(--pct));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    transition: --pct 1s linear;
+.descanso-fab {
+    position: fixed;
+    right: 16px;
+    bottom: 24px;
+    z-index: 9999;
 }
