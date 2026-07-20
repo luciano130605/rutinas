@@ -409,16 +409,17 @@ export default function App() {
   }
 
   function toggleSet(exi, si) {
-    let secondsToRest = null;
+    const ex = session.exercises[exi];
+    const st = ex.sets[si];
+    const willComplete = !st.done; // se va a marcar como hecho
+
+    const secondsToRest = willComplete
+      ? (ex.rest ? parseInt(ex.rest, 10) : restDefault)
+      : null;
 
     setSession(s => {
       const next = JSON.parse(JSON.stringify(s));
-      const st = next.exercises[exi].sets[si];
-      st.done = !st.done;
-      if (st.done) {
-        const exRest = next.exercises[exi].rest;
-        secondsToRest = exRest ? parseInt(exRest, 10) : restDefault;
-      }
+      next.exercises[exi].sets[si].done = !next.exercises[exi].sets[si].done;
       return next;
     });
 
@@ -426,7 +427,7 @@ export default function App() {
       startRest(secondsToRest);
     }
   }
-
+  
   function updateLiveField(exi, si, field, value) {
     const clean = value.replace(/[^0-9.]/g, '');
     setSession(s => {
@@ -1009,7 +1010,7 @@ export default function App() {
             onShare={shareRoutine}
             onCopyText={copyRoutineAsText}
             history={history}
-            reminder={{ days: activeRoutine.days || []}}
+            reminder={{ days: activeRoutine.days || [] }}
             onSaveReminder={saveReminder}
             onClearReminder={clearReminder}
           />
