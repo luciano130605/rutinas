@@ -14,7 +14,7 @@
     color: var(--texto);
     font-size: 1.3rem;
     margin-top: 0;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
 }
 
 
@@ -76,4 +76,12 @@
 
 }
 
+.btn-cont-modal {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
 
+.m {
+    font-size: .8rem;
+}

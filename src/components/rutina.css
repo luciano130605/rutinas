@@ -1745,3 +1745,15 @@
     outline: none;
     border-color: var(--acento);
 }
+
+
+.export:disabled {
+    opacity: 0.5 !important;
+    color: var(--texto-gris) !important;
+    cursor: no-drop !important;
+}
+
+.export:disabled:hover {
+    border: 1px solid var(--borde) !important;
+    background: var(--componente-transp);
+}

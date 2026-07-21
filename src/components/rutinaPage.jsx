@@ -21,8 +21,17 @@ export default function RutinaPage({ routines = [], onNewRoutine, onSelectRoutin
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+          <button
+            className="btn export"
+            disabled={routines.length === 0}
+            title={routines.length === 0 ? "No hay rutinas para exportar" : "Exportar"}
+            onClick={() => routines.length > 0 && onExport()}
+            
+          >
+            <Upload size={18} />
+          </button>
           <div className="btn" title="Importar" onClick={onImport}><Download size={18} /></div>
-          <div className="btn" title="Exportar" onClick={onExport}><Upload size={18} /></div>
+
           {rutinasDeHoy.length > 0 && (
             <>
               <div

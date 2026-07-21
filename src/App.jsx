@@ -1456,23 +1456,25 @@ export default function App() {
 
         {pendingImport && (
           <div className="modal-overlay" onClick={() => setPendingImport(null)}>
-            <div className="sileo-cont" style={{ maxWidth: 340, width: '90%', padding: 20 }} onClick={e => e.stopPropagation()}>
-              <h3 style={{ marginTop: 0 }}>
+            <div className="modal-cont" onClick={e => e.stopPropagation()}>
+              <h3>
                 {pendingImport.kind === 'routines' ? 'Importar rutinas' : 'Importar historial'}
               </h3>
               <p className="header-sub" style={{ marginBottom: 16 }}>
                 Se encontraron {pendingImport.data.length} {pendingImport.kind === 'routines' ? 'rutina(s)' : 'entrenamiento(s)'}. ¿Qué querés hacer con lo que ya tenés?
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <button className="btns agregar" onClick={confirmImportMerge}>Agregar sin duplicar</button>
-                <button className="btns eliminar sileo-danger" onClick={confirmImportReplace}>Reemplazar todo</button>
-                <button className="btn" onClick={() => setPendingImport(null)}>Cancelar</button>
+              <div className='btn-cont-modal'>
+                <button className="btns eliminar m" onClick={confirmImportReplace}>Reemplazar todo</button>
+                <button className="btns agregar m" onClick={confirmImportMerge}>Agregar sin duplicar</button>
+
               </div>
+
+              <button className="btns agregar m" onClick={() => setPendingImport(null)}>Cancelar</button>
             </div>
           </div>
         )}
 
       </div>
-    </Toaster>
+    </Toaster >
   );
 }

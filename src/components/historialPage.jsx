@@ -90,8 +90,17 @@ export default function HistorialPage({ history, onSelectEntry, onDeleteEntry, o
       <div className="header-cont">
         <div><h1 className='header-titulo'>Historial</h1><div className="header-sub">{history.length} entrenamiento{history.length !== 1 ? 's' : ''}</div></div>
         <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            className="btn export"
+            disabled={history.length === 0}
+            title={history.length === 0 ? "No hay historial para exportar" : "Exportar"}
+            onClick={() => history.length > 0 && onExport()}
+           
+          >
+            <Upload size={18} />
+          </button>
           <div className="btn" title="Importar" onClick={onImport}><Download size={18} /></div>
-          <div className="btn" title="Exportar" onClick={onExport}><Upload size={18} /></div>
+
         </div>
       </div>
 
