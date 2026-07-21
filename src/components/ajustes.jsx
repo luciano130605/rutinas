@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import "./ajustes.css";
-import { Check, Moon, Sun, RotateCcw, ArrowUpToLine, ArrowDownToLine } from 'lucide-react';
+import { Check, Moon, Sun, RotateCcw, ArrowUpToLine, ArrowDownToLine, Bell } from 'lucide-react';
 
 const ACENTOS = [
     { id: 'acento-verde', nombre: 'Verde', color: '#c6ff34' },
@@ -9,7 +9,7 @@ const ACENTOS = [
     { id: 'acento-violeta', nombre: 'Violeta', color: '#b28aff' },
 ];
 
-const MODO_DEFAULT = true; // oscuro
+const MODO_DEFAULT = true;
 const ACENTO_DEFAULT = 'acento-verde';
 const POSICION_DEFAULT = 'bottom';
 
@@ -21,6 +21,10 @@ export default function Ajustes({
     onChangeAcento,
     toasterPosition,
     onChangeToasterPosition,
+    remindersEnabled,
+    onToggleReminders,
+    reminderTime,
+    onChangeReminderTime,
 }) {
     const [resetFeedback, setResetFeedback] = useState(false);
 
@@ -79,6 +83,38 @@ export default function Ajustes({
                     Abajo
                 </button>
             </div>
+
+            <div className="ajustes-dropdown-separador" />
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div className="ajustes-dropdown-seccion-titulo">
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Bell size={14} /> Recordatorio "Hoy toca"
+                    </span>
+                </div>
+                <button
+                    className='btn'
+                    role="switch"
+                    aria-checked={remindersEnabled}
+                    onClick={onToggleReminders}
+                    style={remindersEnabled ? { color: 'var(--acento)' } : undefined}
+                >
+                    {remindersEnabled ? <Check size={16} /> : <Bell size={16} />}
+                </button>
+            </div>
+
+            {remindersEnabled && (
+                <div className="ajustes-dropdown-acento-fila" style={{ justifyContent: 'space-between' }}>
+                    <span className="ajustes-dropdown-label">Hora del aviso</span>
+                    <input
+                        type="time"
+                        value={reminderTime}
+                        onChange={(e) => onChangeReminderTime(e.target.value)}
+                        className="input-sileo"
+                        style={{ width: 110 }}
+                    />
+                </div>
+            )}
 
             <div className="ajustes-dropdown-separador" />
 
