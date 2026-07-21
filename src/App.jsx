@@ -8,6 +8,10 @@ import RutinaCurso from './components/RutinaCurso';
 import HistorialPage from './components/historialPage';
 import HistorialDetalle from './components/HistorialDetalle';
 
+
+import BackupModal from './components/BackupModal';
+import { encodeBackup, decodeBackup, downloadJSON, readJSONFile } from './utils/backup';
+
 import { EXERCISES_DB } from './data/exercises';
 import { uid } from './utils/id';
 import { playBeep } from './utils/audio';
@@ -26,6 +30,9 @@ export default function App() {
   const [customExercises, setCustomExercises] = useState([]);
   const [restDefault, setRestDefault] = useState(90);
   const [loaded, setLoaded] = useState(false);
+
+  const [backupModal, setBackupModal] = useState(null);
+  const [pendingImport, setPendingImport] = useState(null);
 
   const [activeRoutineId, setActiveRoutineId] = useState(null);
   const [activeHistoryId, setActiveHistoryId] = useState(null);
@@ -187,6 +194,22 @@ export default function App() {
       setScreen('history');
     }
   }, [screen, history, activeHistoryId]);
+
+
+  useEffect(() => {
+    if (!loaded) return;
+    const params = new URLSearchParams(window.location.search);
+    const rCode = params.get('importRoutines');
+    const hCode = params.get('importHistory');
+    if (!rCode && !hCode) return;
+
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, '', cleanUrl);
+
+    if (rCode) finishImportParse('routines', decodeBackup(rCode));
+    else if (hCode) finishImportParse('history', decodeBackup(hCode));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded]);
 
   function startRest(seconds) {
     openTiempoDescansoToast(seconds);
@@ -418,6 +441,107 @@ export default function App() {
     }
   }
 
+
+  function extractBackupCode(text, kind) {
+    const paramName = kind === 'routines' ? 'importRoutines' : 'importHistory';
+    try {
+      const url = new URL(text);
+      const fromUrl = url.searchParams.get(paramName);
+      if (fromUrl) return fromUrl;
+    } catch (e) { /* no era una URL completa, tratamos el texto como el código pelado */ }
+    return text;
+  }
+
+  function finishImportParse(kind, parsed) {
+    const list = Array.isArray(parsed?.[kind === 'routines' ? 'routines' : 'history'])
+      ? parsed[kind === 'routines' ? 'routines' : 'history']
+      : (Array.isArray(parsed) ? parsed : null);
+
+    if (!list || list.length === 0) {
+      showToast('No se pudo leer el contenido importado', 'error');
+      return;
+    }
+    setBackupModal(null);
+    setPendingImport({ kind, data: list });
+  }
+
+  function handleImportText(text) {
+    const kind = backupModal.kind;
+    const code = extractBackupCode(text, kind);
+    finishImportParse(kind, decodeBackup(code));
+  }
+
+  async function handleImportFile(file) {
+    const kind = backupModal.kind;
+    try {
+      finishImportParse(kind, await readJSONFile(file));
+    } catch (e) {
+      showToast('El archivo no es válido', 'error');
+    }
+  }
+
+  function handleExportFile() {
+    const kind = backupModal.kind;
+    if (kind === 'routines') {
+      downloadJSON({ type: 'routines_backup', version: 1, exportedAt: Date.now(), routines }, `rutinas-backup-${Date.now()}.json`);
+    } else {
+      downloadJSON({ type: 'history_backup', version: 1, exportedAt: Date.now(), history }, `historial-backup-${Date.now()}.json`);
+    }
+    showToast('Archivo descargado');
+    setBackupModal(null);
+  }
+
+  async function handleExportLink() {
+    const kind = backupModal.kind;
+    const payload = kind === 'routines'
+      ? { type: 'routines_backup', version: 1, routines }
+      : { type: 'history_backup', version: 1, history };
+    const code = encodeBackup(payload);
+    const paramName = kind === 'routines' ? 'importRoutines' : 'importHistory';
+    const url = `${window.location.origin}${window.location.pathname}?${paramName}=${code}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Link copiado al portapapeles');
+    } catch (e) {
+      showToast('No se pudo copiar el link', 'error');
+    }
+    setBackupModal(null);
+  }
+
+  function confirmImportReplace() {
+    const { kind, data } = pendingImport;
+    if (kind === 'routines') setRoutines(data);
+    else setHistory([...data].sort((a, b) => b.date - a.date));
+    setPendingImport(null);
+    showToast(kind === 'routines' ? `Rutinas reemplazadas (${data.length})` : `Historial reemplazado (${data.length})`);
+  }
+
+  function confirmImportMerge() {
+    const { kind, data } = pendingImport;
+    if (kind === 'routines') {
+      setRoutines(rs => {
+        const existingIds = new Set(rs.map(r => r.id));
+        const existingNames = new Set(rs.map(r => r.name));
+        const added = data.map(r => {
+          if (!existingIds.has(r.id)) return r;
+          let name = r.name, i = 2;
+          while (existingNames.has(name)) { name = `${r.name} (importada ${i})`; i++; }
+          existingNames.add(name);
+          return { ...r, id: uid(), name };
+        });
+        return [...rs, ...added];
+      });
+    } else {
+      setHistory(h => {
+        const existingIds = new Set(h.map(e => e.id));
+        const added = data.filter(e => !existingIds.has(e.id));
+        return [...h, ...added].sort((a, b) => b.date - a.date);
+      });
+    }
+    setPendingImport(null);
+    showToast(kind === 'routines' ? 'Rutinas agregadas' : 'Historial agregado');
+  }
+
   function saveReminder(routineId, days) {
     setRoutines(rs => rs.map(r => r.id === routineId ? { ...r, days } : r));
     showToast('Recordatorio guardado');
@@ -434,7 +558,7 @@ export default function App() {
     const r = routines.find(x => x.id === routineId);
     if (!r) return;
 
-    
+
     setSession({
       routineId: r.id,
       routineName: r.name,
@@ -1181,6 +1305,8 @@ export default function App() {
             routines={routines}
             onNewRoutine={() => openEditor(null)}
             onSelectRoutine={(id) => { setActiveRoutineId(id); setScreen('routineDetail'); setKebabOpen(false); }}
+            onExport={() => setBackupModal({ mode: 'export', kind: 'routines' })}
+            onImport={() => setBackupModal({ mode: 'import', kind: 'routines' })}
           />
         )}
         {screen === 'settings' && (
@@ -1284,6 +1410,8 @@ export default function App() {
             history={history}
             onSelectEntry={(id) => { setActiveHistoryId(id); setScreen('historyDetail'); }}
             onDeleteEntry={deleteHistoryEntry}
+            onExport={() => setBackupModal({ mode: 'export', kind: 'history' })}
+            onImport={() => setBackupModal({ mode: 'import', kind: 'history' })}
           />
         )}
 
@@ -1312,6 +1440,36 @@ export default function App() {
             toasterPosition={toasterPosition}
             onChangeToasterPosition={setToasterPosition}
           />
+        )}
+
+        {backupModal && (
+          <BackupModal
+            mode={backupModal.mode}
+            kind={backupModal.kind}
+            onClose={() => setBackupModal(null)}
+            onExportFile={handleExportFile}
+            onExportLink={handleExportLink}
+            onImportText={handleImportText}
+            onImportFile={handleImportFile}
+          />
+        )}
+
+        {pendingImport && (
+          <div className="modal-overlay" onClick={() => setPendingImport(null)}>
+            <div className="sileo-cont" style={{ maxWidth: 340, width: '90%', padding: 20 }} onClick={e => e.stopPropagation()}>
+              <h3 style={{ marginTop: 0 }}>
+                {pendingImport.kind === 'routines' ? 'Importar rutinas' : 'Importar historial'}
+              </h3>
+              <p className="header-sub" style={{ marginBottom: 16 }}>
+                Se encontraron {pendingImport.data.length} {pendingImport.kind === 'routines' ? 'rutina(s)' : 'entrenamiento(s)'}. ¿Qué querés hacer con lo que ya tenés?
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <button className="btns agregar" onClick={confirmImportMerge}>Agregar sin duplicar</button>
+                <button className="btns eliminar sileo-danger" onClick={confirmImportReplace}>Reemplazar todo</button>
+                <button className="btn" onClick={() => setPendingImport(null)}>Cancelar</button>
+              </div>
+            </div>
+          </div>
         )}
 
       </div>

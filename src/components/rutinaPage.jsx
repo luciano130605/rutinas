@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { Plus, Bell, Dumbbell, ChevronRight } from 'lucide-react';
+import { Plus, Bell, Dumbbell, ChevronRight, Download, Upload } from 'lucide-react';
 import "./rutina.css"
 
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
 
-export default function RutinaPage({ routines = [], onNewRoutine, onSelectRoutine }) {
+export default function RutinaPage({ routines = [], onNewRoutine, onSelectRoutine, onExport, onImport }) {
   const hoy = new Date().getDay();
   const [showHoy, setShowHoy] = useState(false);
 
@@ -21,6 +21,8 @@ export default function RutinaPage({ routines = [], onNewRoutine, onSelectRoutin
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+          <div className="btn" title="Importar" onClick={onImport}><Download size={18} /></div>
+          <div className="btn" title="Exportar" onClick={onExport}><Upload size={18} /></div>
           {rutinasDeHoy.length > 0 && (
             <>
               <div
@@ -32,7 +34,6 @@ export default function RutinaPage({ routines = [], onNewRoutine, onSelectRoutin
                 <Bell size={20} />
                 <span className="notif-dot" />
               </div>
-
               {showHoy && (
                 <>
                   <div className="notif-backdrop" onClick={() => setShowHoy(false)} />

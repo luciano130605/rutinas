@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Trash2, Calendar, ArrowUpDown, X, ChevronLeft, ChevronRight, Flame } from 'lucide-react';
+import { Search, Trash2, Calendar, ArrowUpDown, X, ChevronLeft, ChevronRight, Flame, Download, Upload } from 'lucide-react';
 import { formatElapsed } from '../utils/time';
 import "./historial.css"
 import "./rutina.css"
@@ -30,7 +30,7 @@ function calcStreak(history) {
   return streak;
 }
 
-export default function HistorialPage({ history, onSelectEntry, onDeleteEntry }) {
+export default function HistorialPage({ history, onSelectEntry, onDeleteEntry, onExport, onImport }) {
   const [query, setQuery] = useState('');
   const [selectedMuscles, setSelectedMuscles] = useState(new Set());
   const [dateFrom, setDateFrom] = useState(null);
@@ -89,7 +89,10 @@ export default function HistorialPage({ history, onSelectEntry, onDeleteEntry })
     <>
       <div className="header-cont">
         <div><h1 className='header-titulo'>Historial</h1><div className="header-sub">{history.length} entrenamiento{history.length !== 1 ? 's' : ''}</div></div>
-        <div style={{ width: 40 }}></div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div className="btn" title="Importar" onClick={onImport}><Download size={18} /></div>
+          <div className="btn" title="Exportar" onClick={onExport}><Upload size={18} /></div>
+        </div>
       </div>
 
       <div className="page-cont top">

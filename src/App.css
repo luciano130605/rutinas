@@ -18,3 +18,8 @@
     z-index: 999;
     transition: bottom .3s ease;
 }
+
+
+input::placeholder {
+    color: var(--texto-gris-oscuro);
+}
