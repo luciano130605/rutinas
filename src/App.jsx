@@ -87,8 +87,11 @@ export default function App() {
       try {
         const r = await window.storage.get('gym_reminder_id', false);
         if (r && r.value) setReminderId(JSON.parse(r.value));
-        else { const newId = uid(); setReminderId(newId); await window.storage.set('gym_reminder_id', JSON.stringify(newId), false); }
-      } catch (e) { }
+      } catch (e) {
+        const newId = uid();
+        setReminderId(newId);
+        try { await window.storage.set('gym_reminder_id', JSON.stringify(newId), false); } catch (e2) { }
+      }
       try { const r = await window.storage.get('gym_routines', false); if (r && r.value) setRoutines(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_history', false); if (r && r.value) setHistory(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_modo_oscuro', false); if (r && r.value) setModoOscuro(JSON.parse(r.value)); } catch (e) { }
