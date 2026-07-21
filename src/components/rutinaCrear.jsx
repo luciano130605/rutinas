@@ -237,9 +237,7 @@ export default function RutinaCrear({
         {!isSingle && (
           <button className="btns agregar" style={{ marginTop: 6 }} onClick={() => onOpenPicker()}>+ Añadir ejercicio</button>
         )}
-        {!isSingle && d.exercises.length > 0 && (
-          <button className="btns eliminar" style={{ marginTop: 24 }} onClick={onDeleteRoutine}>Eliminar rutina</button>
-        )}
+       
       </div>
 
       {pickerOpen && (
