@@ -66,7 +66,14 @@ export default function App() {
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(e => console.error('SW error:', e));
+      navigator.serviceWorker.register('/sw.js')
+        .then(async (reg) => {
+          await navigator.serviceWorker.ready;
+          const sub = await reg.pushManager.getSubscription();
+          console.log('SUB:', sub);
+          alert('Permiso: ' + Notification.permission + '\nSuscripción: ' + (sub ? sub.endpoint.slice(0, 60) : 'NINGUNA'));
+        })
+        .catch(e => console.error('SW error:', e));
     }
   }, []);
 
