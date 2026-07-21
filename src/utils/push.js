@@ -1,5 +1,5 @@
 const WORKER_URL = 'https://rest-timer-push.luciano-rest-time-gym.workers.dev'; // 👈 tu URL real
-const VAPID_PUBLIC_KEY = 'BLK6UpwDQndBlUp-ynDVLNUXoqjExRxIkOjmM_-VwPbXWi2Ie0uZ3sMXAofQk3SQdEsBqUNEDH2ePrdbQzOlaiQ';
+const VAPID_PUBLIC_KEY = 'BCmp418YlwSdqACRIQWrnd9ZCl8CW-v_oyF15XANCAYD47n2gSNlQ_AKeJLwK6HRRGoY1PtRmp_wYezJhNHZ0uo';
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
