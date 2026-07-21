@@ -17,6 +17,13 @@ export async function getPushSubscription() {
   const reg = await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription();
 
+  // 👇 TEMPORAL: si ya había una suscripción vieja/corrupta, la tiramos
+  // y forzamos crear una nueva limpia.
+  if (sub) {
+    try { await sub.unsubscribe(); } catch (e) { /* ignorar */ }
+    sub = null;
+  }
+
   if (!sub) {
     if (Notification.permission !== 'granted') {
       const perm = await Notification.requestPermission();
