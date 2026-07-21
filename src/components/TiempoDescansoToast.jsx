@@ -6,6 +6,7 @@ import { formatElapsed } from '../utils/time';
 import { playBeep } from '../utils/audio';
 import "./descanso.css";
 import "./rutina.css";
+import { scheduleServerPush, cancelServerPush } from '../utils/push';
 
 const stopAll = (e) => e.stopPropagation();
 
@@ -16,6 +17,7 @@ let beeped = false;
 let realToastId = null;
 let wakeLock = null;
 const listeners = new Set();
+let serverTimerId = null;
 
 function notify() {
     listeners.forEach(fn => fn());
@@ -35,6 +37,7 @@ function tick() {
         beeped = true;
         playBeep();
         sileo.success({ title: "Tiempo terminado", duration: 3000 });
+        showBrowserNotification(); // 👈 nuevo
     }
     notify();
 }
@@ -46,6 +49,7 @@ function adjust(delta) {
         const remaining = getRemaining();
         store.total = Math.max(store.total, remaining);
         if (remaining > 0) beeped = false;
+        scheduleServerPush(store.endTime, serverTimerId).then(id => { serverTimerId = id; }); // 👈
     } else {
         store.pausedRemaining = Math.max(0, store.pausedRemaining + delta);
         store.total = Math.max(store.total, store.pausedRemaining);
@@ -53,19 +57,45 @@ function adjust(delta) {
     }
     notify();
 }
-
 function togglePause() {
     if (!store) return;
     if (store.running) {
         store.pausedRemaining = getRemaining();
         store.running = false;
+        cancelServerPush(serverTimerId); // 👈 pausado = no queremos push
     } else {
         store.endTime = Date.now() + store.pausedRemaining * 1000;
         store.running = true;
+        scheduleServerPush(store.endTime, serverTimerId).then(id => { serverTimerId = id; }); // 👈
     }
     notify();
 }
 
+let notificationPermissionRequested = false;
+
+function requestNotificationPermission() {
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission === 'default' && !notificationPermissionRequested) {
+        notificationPermissionRequested = true;
+        Notification.requestPermission();
+    }
+}
+
+function showBrowserNotification() {
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission !== 'granted') return;
+    try {
+        const n = new Notification('⏱️ Descanso terminado', {
+            body: 'Volvé a entrenar',
+            tag: 'descanso-timer',
+            renotify: true,
+        });
+        n.onclick = () => {
+            window.focus();
+            n.close();
+        };
+    } catch (e) { /* algunos navegadores tiran error si la pestaña está en foco */ }
+}
 // --- Wake lock (best-effort, no rompe nada si el navegador no lo soporta) ---
 async function requestWakeLock() {
     try {
@@ -127,6 +157,8 @@ function toggleToast() {
 function dismiss() {
     clearInterval(intervalId);
     intervalId = null;
+    cancelServerPush(serverTimerId); // 👈
+    serverTimerId = null;            // 👈
     store = null;
     toastOpen = false;
     releaseWakeLock();
@@ -321,21 +353,24 @@ export function DescansoBotonFlotante() {
     return ReactDOM.createPortal(btn, document.body);
 }
 export default function openTiempoDescansoToast(seconds) {
-    console.log('[descanso] abriendo toast, seconds=', seconds);
     beeped = false;
+    requestNotificationPermission();
 
     if (store) {
         clearInterval(intervalId);
         intervalId = null;
-        if (realToastId) {
-            try { sileo.dismiss(realToastId); } catch (e) { }
-        }
+        cancelServerPush(serverTimerId); // 👈 cancela el anterior si había uno
+        serverTimerId = null;
+        if (realToastId) { try { sileo.dismiss(realToastId); } catch (e) { } }
         store = null;
         realToastId = null;
     }
 
-    store = { total: seconds, running: true, endTime: Date.now() + seconds * 1000, pausedRemaining: seconds };
+    const endTime = Date.now() + seconds * 1000;
+    store = { total: seconds, running: true, endTime, pausedRemaining: seconds };
     intervalId = setInterval(tick, 1000);
+
+    scheduleServerPush(endTime).then(id => { serverTimerId = id; }); // 👈 nuevo
 
     createToast();
     toastOpen = true;
