@@ -1,5 +1,5 @@
  KG o LB en settings
-  api para notificaciones cuando termino el descanso
+  Sacarle los 60segs para que lleguen al instante las notificaciones
   bd todo ylogin etc
 
 

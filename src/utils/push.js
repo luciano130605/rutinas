@@ -1,4 +1,4 @@
-const WORKER_URL = 'https://rest-timer-push.luciano-rest-time-gym.workers.dev '; // 👈 tu URL real
+const WORKER_URL = 'https://rest-timer-push.luciano-rest-time-gym.workers.dev'; // 👈 tu URL real
 const VAPID_PUBLIC_KEY = 'BLK6UpwDQndBlUp-ynDVLNUXoqjExRxIkOjmM_-VwPbXWi2Ie0uZ3sMXAofQk3SQdEsBqUNEDH2ePrdbQzOlaiQ';
 
 function urlBase64ToUint8Array(base64String) {
