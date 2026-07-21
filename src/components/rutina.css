@@ -1728,3 +1728,20 @@
     padding-left: 1rem;
     color: var(--acento);
 }
+
+
+.input-notas {
+    margin-top: 10px;
+    resize: none;
+    text-align: start !important;
+    width: 50% !important;
+    background: none;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    transition: all .3s;
+}
+
+.input-notas:focus {
+    outline: none;
+    border-color: var(--acento);
+}

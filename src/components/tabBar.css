@@ -1,6 +1,6 @@
 .tabbar {
     position: fixed;
-    bottom: 10px;
+    bottom: 30px;
     left: 50%;
     border-radius: 12px;
     transform: translateX(-50%);

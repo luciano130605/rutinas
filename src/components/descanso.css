@@ -114,4 +114,10 @@
     right: 16px;
     bottom: 24px;
     z-index: 9999;
+    touch-action: none;
+    cursor: grab;
+}
+
+.descanso-fab:active {
+    cursor: grabbing;
 }

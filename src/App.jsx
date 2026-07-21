@@ -58,6 +58,12 @@ export default function App() {
   }, [modoOscuro]);
 
   useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(e => console.error('SW error:', e));
+    }
+  }, []);
+
+  useEffect(() => {
     const html = document.documentElement;
     html.classList.remove(...ACENTOS_IDS);
     html.classList.add(acento);
@@ -292,10 +298,57 @@ export default function App() {
   }
 
   function deleteRoutine(id) {
-    setRoutines(rs => rs.filter(r => r.id !== id));
-    showToast('Rutina eliminada', 'warning');
-  }
+    const removed = routines.find(r => r.id === id);
+    const removedIndex = routines.findIndex(r => r.id === id);
 
+    const toastId = sileo.action({
+      title: "¿Eliminar esta rutina?",
+      description: removed?.name,
+      duration: null,
+      button: {
+        title: "Eliminar",
+        className: "btns eliminar sileo-danger",
+        onClick: () => {
+          setRoutines(rs => rs.filter(r => r.id !== id));
+          sileo.dismiss(toastId);
+
+          // Esperamos a que termine la animación de salida del toast de confirmación
+          // antes de mostrar el de "Deshacer", para que no se pisen visualmente.
+          setTimeout(() => {
+            const undoToastId = sileo.action({
+              description: removed?.name,
+              duration: 5000,
+              button: {
+                title: 'Deshacer',
+                className: 'btns agregar',
+                onClick: () => {
+                  setRoutines(rs => {
+                    const next = [...rs];
+                    const idx = Math.min(removedIndex, next.length);
+                    next.splice(idx, 0, removed);
+                    return next;
+                  });
+                  sileo.dismiss(undoToastId);
+                },
+              },
+              styles: {
+                container: "sileo-cont",
+                title: "sileo-title",
+                description: "sileo-description",
+                button: "btns agregar sileo",
+              },
+            });
+          }, 300);
+        },
+      },
+      styles: {
+        container: "sileo-cont-danger",
+        title: "sileo-title-danger",
+        description: "sileo-description",
+        button: "btns eliminar sileo-danger",
+      },
+    });
+  }
   function duplicateRoutine(id) {
     const r = routines.find(x => x.id === id);
     if (!r) return;
@@ -380,6 +433,8 @@ export default function App() {
   function startSession(routineId) {
     const r = routines.find(x => x.id === routineId);
     if (!r) return;
+
+    
     setSession({
       routineId: r.id,
       routineName: r.name,
@@ -389,7 +444,15 @@ export default function App() {
       pausedMs: 0,
       exercises: r.exercises.map(ex => ({
         id: uid(), name: ex.name, muscle: ex.muscle, gif: ex.gif, rest: ex.rest || '',
-        sets: ex.sets.map(s => ({ id: uid(), reps: s.reps || '', weight: s.weight || '', done: false }))
+        notes: '',
+        sets: ex.sets.map(s => ({
+          id: uid(),
+          reps: '',
+          weight: '',
+          placeholderReps: s.reps || '',
+          placeholderWeight: s.weight || '',
+          done: false
+        }))
       }))
     });
     setRestTimer(null);
@@ -408,14 +471,10 @@ export default function App() {
     setRestTimer(rt => (rt && rt.running) ? { ...rt, running: false } : rt);
   }
 
-  function toggleSet(exi, si) {
+  function toggleSet(exi, si, options = {}) {
     const ex = session.exercises[exi];
     const st = ex.sets[si];
-    const willComplete = !st.done; // se va a marcar como hecho
-
-    const secondsToRest = willComplete
-      ? (ex.rest ? parseInt(ex.rest, 10) : restDefault)
-      : null;
+    const willComplete = !st.done;
 
     setSession(s => {
       const next = JSON.parse(JSON.stringify(s));
@@ -425,13 +484,16 @@ export default function App() {
 
     if (willComplete) {
       const secondsToRest = ex.rest ? parseInt(ex.rest, 10) : restDefault;
-      startRest(secondsToRest);
+      if (options.celebrate) {
+        // Dejamos 5s libres para el toast de felicitación antes de abrir el de descanso
+        setTimeout(() => {
+          startRest(Math.max(0, secondsToRest - 5));
+        }, 5000);
+      } else {
+        startRest(secondsToRest);
+      }
     } else {
-      resetDescansoState(); // se desmarcó el tilde -> cortamos el descanso
-    }
-
-    if (secondsToRest !== null) {
-      startRest(secondsToRest);
+      resetDescansoState();
     }
   }
 
@@ -444,12 +506,27 @@ export default function App() {
     });
   }
 
+  function updateExerciseNotes(exi, value) {
+    setSession(s => {
+      const next = JSON.parse(JSON.stringify(s));
+      next.exercises[exi].notes = value;
+      return next;
+    });
+  }
+
   function addLiveSet(exi) {
     setSession(s => {
       const next = JSON.parse(JSON.stringify(s));
       const sets = next.exercises[exi].sets;
       const last = sets[sets.length - 1];
-      sets.push({ id: uid(), reps: last ? last.reps : '', weight: last ? last.weight : '', done: false });
+      sets.push({
+        id: uid(),
+        reps: '',
+        weight: '',
+        placeholderReps: last ? (last.reps || last.placeholderReps || '') : '',
+        placeholderWeight: last ? (last.weight || last.placeholderWeight || '') : '',
+        done: false
+      });
       return next;
     });
   }
@@ -473,6 +550,7 @@ export default function App() {
       .map(ex => ({
         name: ex.name,
         muscle: ex.muscle || '',
+        notes: ex.notes || '',
         sets: ex.sets.filter(st => (st.weight !== '' || st.reps !== ''))
       }))
       .filter(ex => ex.sets.length > 0);
@@ -532,21 +610,50 @@ export default function App() {
     });
   }
 
-  // ---------- history ----------
-  // DESPUÉS
   function deleteHistoryEntry(id) {
     const toastId = sileo.action({
       title: "¿Eliminar este entrenamiento?",
-      description: "Esta acción no se puede deshacer.",
+      description: "Podrás deshacerlo justo después de eliminar.",
       duration: null,
       button: {
         title: "Eliminar",
         className: "btns eliminar sileo-danger",
         onClick: () => {
+          const removed = history.find(e => e.id === id);
+          const removedIndex = history.findIndex(e => e.id === id);
+
           setHistory(h => h.filter(e => e.id !== id));
           if (activeHistoryId === id) setScreen('history');
-          showToast('Entrenamiento eliminado', 'warning');
           sileo.dismiss(toastId);
+
+          // Esperamos a que termine la animación de salida del toast de confirmación
+          // antes de mostrar el de "Deshacer", para que no se pisen visualmente.
+          setTimeout(() => {
+            const undoToastId = sileo.action({
+              title: 'Entrenamiento eliminado',
+              description: removed?.routineName,
+              duration: 6000,
+              button: {
+                title: 'Deshacer',
+                className: 'btns agregar',
+                onClick: () => {
+                  setHistory(h => {
+                    const next = [...h];
+                    const idx = Math.min(removedIndex, next.length);
+                    next.splice(idx, 0, removed);
+                    return next;
+                  });
+                  sileo.dismiss(undoToastId);
+                },
+              },
+              styles: {
+                container: "sileo-cont",
+                title: "sileo-title",
+                description: "sileo-description",
+                button: "btns agregar sileo",
+              },
+            });
+          }, 300);
         },
       },
       styles: {
@@ -829,7 +936,32 @@ export default function App() {
     });
   }
   function removeExercise(i) {
+    const removed = editorDraft.exercises[i];
     setEditorDraft(d => ({ ...d, exercises: d.exercises.filter((_, idx) => idx !== i) }));
+
+    const toastId = sileo.action({
+      title: 'Ejercicio eliminado',
+      duration: 4000,
+      button: {
+        title: 'Deshacer',
+        className: 'btns agregar',
+        onClick: () => {
+          setEditorDraft(d => {
+            if (!d) return d;
+            const exercises = [...d.exercises];
+            exercises.splice(i, 0, removed);
+            return { ...d, exercises };
+          });
+          sileo.dismiss(toastId);
+        },
+      },
+      styles: {
+        container: "sileo-cont",
+        title: "sileo-title",
+        description: "sileo-description",
+        button: "btns agregar sileo",
+      },
+    });
   }
   function addSet(exi) {
     setEditorDraft(d => {
@@ -848,10 +980,35 @@ export default function App() {
     });
   }
   function removeSet(exi, si) {
+    const removed = editorDraft.exercises[exi].sets[si];
     setEditorDraft(d => {
       const next = JSON.parse(JSON.stringify(d));
       next.exercises[exi].sets.splice(si, 1);
       return next;
+    });
+
+    const toastId = sileo.action({
+      title: 'Serie eliminada',
+      duration: 4000,
+      button: {
+        title: 'Deshacer',
+        className: 'btns agregar',
+        onClick: () => {
+          setEditorDraft(d => {
+            if (!d) return d;
+            const next = JSON.parse(JSON.stringify(d));
+            next.exercises[exi].sets.splice(si, 0, removed);
+            return next;
+          });
+          sileo.dismiss(toastId);
+        },
+      },
+      styles: {
+        container: "sileo-cont",
+        title: "sileo-title",
+        description: "sileo-description",
+        button: "btns agregar sileo",
+      },
     });
   }
   function updateSetField(exi, si, field, value) {
@@ -926,16 +1083,22 @@ export default function App() {
 
     const toastId = sileo.action({
       title: "¿Eliminar esta rutina?",
-      description: "Esta acción no se puede deshacer.",
+      description: "Podrás deshacerlo justo después de eliminar.",
       duration: null,
       button: {
         title: "Eliminar",
         className: "btns eliminar sileo-danger",
         onClick: () => {
-          deleteRoutine(d.id);
+          const routineId = d.id;
           setEditorDraft(null);
           setScreen('routines');
           sileo.dismiss(toastId);
+
+          // Esperamos a que termine la animación de salida del toast de confirmación
+          // antes de que deleteRoutine muestre el toast de "Deshacer".
+          setTimeout(() => {
+            deleteRoutine(routineId);
+          }, 300);
         },
       },
       styles: {
@@ -950,17 +1113,46 @@ export default function App() {
   function handleDetailDelete() {
     const toastId = sileo.action({
       title: "¿Eliminar esta rutina?",
-      description: "Esta acción no se puede deshacer.",
+      description: "Podrás deshacerlo justo después de eliminar.",
       icon: false,
       duration: null,
       button: {
         title: "Eliminar",
         className: "btns eliminar sileo",
         onClick: () => {
-          deleteRoutine(activeRoutineId);
-          setScreen('routines');
-          setKebabOpen(false);
-          sileo.dismiss(toastId);
+          const removed = routines.find(r => r.id === activeRoutineId);
+          const removedIndex = routines.findIndex(r => r.id === activeRoutineId);
+
+          setRoutines(rs => rs.filter(r => r.id !== activeRoutineId));
+
+          setTimeout(() => {
+            const undoToastId = sileo.action({
+              title: `Rutina eliminada`,
+              duration: 6000,
+              button: {
+                title: 'Deshacer',
+                className: 'btns agregar',
+                onClick: () => {
+                  setRoutines(rs => {
+                    const next = [...rs];
+                    const idx = Math.min(removedIndex, next.length);
+                    next.splice(idx, 0, removed);
+                    return next;
+                  });
+                  sileo.dismiss(undoToastId);
+                },
+              },
+              styles: {
+                container: "sileo-cont",
+                title: "sileo-title",
+                description: "sileo-description",
+                button: "btns agregar sileo",
+              },
+            });
+
+            setScreen('routines');
+            setKebabOpen(false);
+          }, 400);
         },
       },
       styles: {
@@ -1062,6 +1254,7 @@ export default function App() {
             restDefault={restDefault}
             onCancel={cancelSession}
             onToggleSet={toggleSet}
+            onUpdateNotes={updateExerciseNotes}
             onUpdateField={updateLiveField}
             onAddSet={addLiveSet}
             onDuplicateLastSet={duplicateLiveSet}

@@ -18,11 +18,7 @@ const FEATURES = [
         title: 'Conectá tu reloj',
         desc: 'Sincronizá tu wearable para registrar frecuencia cardíaca en cada serie.',
     },
-    {
-        icon: Bell,
-        title: 'Recordatorios inteligentes',
-        desc: 'Te avisamos cuándo entrenar según tu racha y tus rutinas guardadas.',
-    },
+
 ];
 
 export default function ProximamentePage() {

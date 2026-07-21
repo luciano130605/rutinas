@@ -237,19 +237,82 @@ function ContenidoDescanso() {
 }
 
 // --- Botón circular fijo: abre/cierra el toast sin tocar el timer ---
+// --- Botón circular fijo: abre/cierra el toast sin tocar el timer, y es arrastrable ---
 export function DescansoBotonFlotante() {
     const s = useDescansoStore();
-    
+    const [pos, setPos] = useState(null); // null = usa la posición default (CSS); si no, {x, y} en px
+    const dragState = React.useRef({ dragging: false, moved: false, offsetX: 0, offsetY: 0 });
+    const btnRef = React.useRef(null);
+
     if (!s) return null;
+
+    const clamp = (x, y) => {
+        const el = btnRef.current;
+        const w = el ? el.offsetWidth : 48;
+        const h = el ? el.offsetHeight : 48;
+        const maxX = window.innerWidth - w - 8;
+        const maxY = window.innerHeight - h - 8;
+        return {
+            x: Math.min(Math.max(8, x), Math.max(8, maxX)),
+            y: Math.min(Math.max(8, y), Math.max(8, maxY)),
+        };
+    };
+
+    const handlePointerDown = (e) => {
+        const el = btnRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        dragState.current = {
+            dragging: true,
+            moved: false,
+            offsetX: e.clientX - rect.left,
+            offsetY: e.clientY - rect.top,
+        };
+        el.setPointerCapture(e.pointerId);
+    };
+
+    const handlePointerMove = (e) => {
+        if (!dragState.current.dragging) return;
+        const dx = e.clientX - dragState.current.offsetX;
+        const dy = e.clientY - dragState.current.offsetY;
+
+        if (!dragState.current.moved) {
+            // Umbral chico para no confundir un tap con un arrastre
+            const el = btnRef.current;
+            const rect = el.getBoundingClientRect();
+            const movedDist = Math.hypot(e.clientX - (rect.left + dragState.current.offsetX), e.clientY - (rect.top + dragState.current.offsetY));
+            if (movedDist < 4) return;
+            dragState.current.moved = true;
+        }
+
+        setPos(clamp(dx, dy));
+    };
+
+    const handlePointerUp = (e) => {
+        if (!dragState.current.dragging) return;
+        const wasMoved = dragState.current.moved;
+        dragState.current.dragging = false;
+        try { btnRef.current && btnRef.current.releasePointerCapture(e.pointerId); } catch (err) { }
+
+        if (!wasMoved) {
+            // No se movió -> fue un tap/click real: togglear el toast
+            toggleToast();
+        }
+    };
 
     const remaining = getRemaining();
 
     const btn = (
         <button
+            ref={btnRef}
             type="button"
             className="btn acento descanso-fab"
             title={toastOpen ? 'Ocultar temporizador de descanso' : 'Mostrar temporizador de descanso'}
-            onClick={toggleToast}
+            style={pos ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
         >
             <Timer size={20} />
         </button>
@@ -257,7 +320,6 @@ export function DescansoBotonFlotante() {
 
     return ReactDOM.createPortal(btn, document.body);
 }
-
 export default function openTiempoDescansoToast(seconds) {
     console.log('[descanso] abriendo toast, seconds=', seconds);
     beeped = false;

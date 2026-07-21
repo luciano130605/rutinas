@@ -67,6 +67,11 @@ export default function HistorialDetalle({ entry, onBack, onDelete }) {
               {ex.sets.map((s, j) => (
                 <div key={j} className="historial-detalle"><span>Serie {j + 1}</span><span>{s.weight || 0} kg × {s.reps || 0} reps</span></div>
               ))}
+              {ex.notes && (
+                <div className="header-sub" >
+                  {ex.notes}
+                </div>
+              )}
             </div>
           );
         })}

@@ -424,15 +424,7 @@ export default function RutinaDetalle({
                   }}
                 >
                   <span>{formatRelative(last.date)} · {Math.round(last.volume).toLocaleString('es-AR')} kg</span>
-                  {delta !== null && delta !== 0 && (
-                    <span style={{
-                      display: 'flex', alignItems: 'center', gap: 2,
-                      color: delta > 0 ? '#22c55e' : '#ef4444'
-                    }}>
-                      {delta > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                      {delta > 0 ? '+' : ''}{Math.round(delta)} kg
-                    </span>
-                  )}
+                 
                 </div>
               )}
 

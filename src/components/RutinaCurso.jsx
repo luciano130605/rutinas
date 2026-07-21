@@ -4,12 +4,14 @@ import { formatElapsed } from '../utils/time';
 import EjercicioModal from './ejercicioModal';
 import "./rutina.css"
 import { DescansoBotonFlotante, resetDescansoState } from './TiempoDescansoToast';
+import { sileo } from 'sileo';
 
 export default function RutinaCurso({
   session, restTimer, restDefault, history = [],
   onCancel, onToggleSet, onUpdateField, onAddSet, onFinish,
   onSetRestDefault, onAdjustRest, onTogglePause, onDismissRest,
   onDuplicateLastSet, onOpenPicker, onToggleSessionPause, onEditExercise,
+  onUpdateNotes,
   pickerOpen, allExercises, pickerQuery, onPickerQueryChange, pickerSelection,
   onTogglePick, onCreateCustomExercise, onConfirmPicker, onClosePicker
 }) {
@@ -19,7 +21,8 @@ export default function RutinaCurso({
   const [gifPreview, setGifPreview] = React.useState(null);
   const [gifFailedIds, setGifFailedIds] = React.useState(new Set());
   const exerciseRefs = React.useRef({});
-
+  const [showDone, setShowDone] = React.useState(false);
+  const [finishingKeys, setFinishingKeys] = React.useState(new Set());
   React.useEffect(() => {
     if (s?.paused) return;
     const id = setInterval(() => forceTick(t => t + 1), 1000);
@@ -88,7 +91,25 @@ export default function RutinaCurso({
     const set = ex.sets[si];
     const willComplete = !set.done && ex.sets.every((st, idx) => idx === si || st.done);
 
-    onToggleSet(exi, si);
+    let isPR = false;
+    let nombre, w, r;
+    if (willComplete) {
+      nombre = ex.nombre ?? ex.name;
+      w = +set.weight || 0;
+      r = +set.reps || 0;
+      const record = records.get(nombre);
+      isPR = w > 0 && (!record || w > record.weight || (w === record.weight && r > record.reps));
+    }
+
+    onToggleSet(exi, si, { celebrate: isPR });
+
+    if (isPR) {
+      sileo.success({
+        title: `¡Nuevo récord en ${nombre} 🏆`,
+        description: `${w}kg × ${r} reps`,
+        duration: 4800,
+      });
+    }
 
     if (!willComplete) return;
 
@@ -111,6 +132,16 @@ export default function RutinaCurso({
       return next;
     });
 
+    // Animamos la salida del ejercicio recién completado antes de sacarlo de la vista principal
+    setFinishingKeys(prev => new Set(prev).add(currentKey));
+    setTimeout(() => {
+      setFinishingKeys(prev => {
+        const next = new Set(prev);
+        next.delete(currentKey);
+        return next;
+      });
+    }, 380);
+
     if (nextKey !== null) {
       setTimeout(() => {
         const node = exerciseRefs.current[nextKey];
@@ -119,6 +150,12 @@ export default function RutinaCurso({
     }
   };
 
+  const exercisesWithIndex = s.exercises.map((ex, exi) => ({ ex, exi }));
+  const doneEntries = exercisesWithIndex.filter(({ ex }) => ex.sets.length > 0 && ex.sets.every(st => st.done));
+  const pendingEntries = exercisesWithIndex.filter(
+    ({ ex, exi }) => !(ex.sets.length > 0 && ex.sets.every(st => st.done)) || finishingKeys.has(ex.id ?? exi)
+  );
+  const visibleEntries = showDone ? exercisesWithIndex : pendingEntries;
   return (
     <>
       <DescansoBotonFlotante />
@@ -136,8 +173,30 @@ export default function RutinaCurso({
           <div className="header-sub">{s.paused ? ' · Pausado' : ''}</div>
         </div>
         {s.exercises.length > 0 ? (
-          <div className="btn" title={allCollapsed ? 'Expandir todo' : 'Colapsar todo'} onClick={toggleAll}>
-            {allCollapsed ? <ChevronsUpDown size={16} /> : <ChevronsDownUp size={16} />}
+          <div style={{ display: 'flex', gap: 6 }}>
+            {doneEntries.length > 0 && (
+              <div
+                className="btn"
+                title={showDone ? 'Ocultar terminados' : 'Ver terminados'}
+                onClick={() => setShowDone(v => !v)}
+                style={{ position: 'relative' }}
+              >
+                <CheckCircle2 size={16} color={showDone ? 'var(--acento)' : undefined} />
+                <span
+                  style={{
+                    position: 'absolute', top: -4, right: -4,
+                    background: 'var(--acento)', color: 'var(--txt-btn)',
+                    borderRadius: '50%', fontSize: 10, lineHeight: '14px',
+                    width: 14, height: 14, textAlign: 'center'
+                  }}
+                >
+                  {doneEntries.length}
+                </span>
+              </div>
+            )}
+            <div className="btn" title={allCollapsed ? 'Expandir todo' : 'Colapsar todo'} onClick={toggleAll}>
+              {allCollapsed ? <ChevronsUpDown size={16} /> : <ChevronsDownUp size={16} />}
+            </div>
           </div>
         ) : <div style={{ width: 40 }}></div>}
       </div>
@@ -162,7 +221,7 @@ export default function RutinaCurso({
       )}
 
       <div className="page-cont top">
-        {s.exercises.map((ex, exi) => {
+        {visibleEntries.map(({ ex, exi }) => {
           const key = ex.id ?? exi;
           const isCollapsed = collapsedIds.has(key);
           const nombre = ex.nombre ?? ex.name;
@@ -172,7 +231,7 @@ export default function RutinaCurso({
 
           const doneInEx = ex.sets.filter(st => st.done).length;
           const isExDone = ex.sets.length > 0 && doneInEx === ex.sets.length;
-          const record = records.get(nombre); // NUEVO: separado para reusar abajo
+          const record = records.get(nombre);
 
           return (
             <div
@@ -181,6 +240,11 @@ export default function RutinaCurso({
               ref={(node) => { exerciseRefs.current[key] = node; }}
               style={{
                 position: 'relative',
+                transition: 'opacity .35s ease, transform .35s ease, max-height .35s ease',
+                ...(finishingKeys.has(key) ? {
+                  opacity: 0,
+                  transform: 'scale(0.97)',
+                } : {}),
                 ...(isExDone ? {
                   borderColor: 'var(--acento)',
                 } : {})
@@ -268,8 +332,18 @@ export default function RutinaCurso({
                     {ex.sets.map((set, si) => (
                       <div key={set.id ?? si} className="ejercicio-inputs-cont">
                         <span className="ejercicio-num">{si + 1}</span>
-                        <input type="text" inputMode="decimal" value={set.weight} placeholder="0" onChange={e => onUpdateField(exi, si, 'weight', e.target.value)} />
-                        <input type="text" inputMode="numeric" value={set.reps} placeholder="0" onChange={e => onUpdateField(exi, si, 'reps', e.target.value)} />
+                        <input
+                          type="text" inputMode="decimal"
+                          value={set.weight}
+                          placeholder={set.placeholderWeight || '0'}
+                          onChange={e => onUpdateField(exi, si, 'weight', e.target.value)}
+                        />
+                        <input
+                          type="text" inputMode="numeric"
+                          value={set.reps}
+                          placeholder={set.placeholderReps || '0'}
+                          onChange={e => onUpdateField(exi, si, 'reps', e.target.value)}
+                        />
                         <div className='check-cont'>
                           <button title='Terminado' className={`check ${set.done ? 'done' : ''}`} onClick={() => handleToggleSet(exi, si)}>
                             {<Check size={15} style={{ position: "relative", right: 1 }} />}
@@ -282,12 +356,27 @@ export default function RutinaCurso({
                         <button className="btns agregar" onClick={() => onDuplicateLastSet(exi)}><Copy size={12} /> Duplicar</button>
                       )}
                     </div>
+                    {onUpdateNotes && (
+                      <input
+                        className="input-notas"
+                        placeholder="Notas"
+                        value={ex.notes || ''}
+                        onChange={e => onUpdateNotes(exi, e.target.value)}
+                        rows={2}
+                      />
+                    )}
                   </div>
                 )
               }
             </div>
           );
         })}
+
+        {pendingEntries.length === 0 && doneEntries.length > 0 && !showDone && (
+          <div className="header-sub" style={{ textAlign: 'center', padding: '20px 0', color:"var(--acento)" }}>
+            ¡Terminaste todos los ejercicios! 🎉
+          </div>
+        )}
         <button className="btns primario" style={{ marginTop: 6, marginBottom: restTimer ? 110 : 0 }} onClick={onFinish}>Finalizar rutina</button>
       </div >
 
