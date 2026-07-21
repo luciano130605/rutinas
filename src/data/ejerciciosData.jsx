@@ -19,7 +19,7 @@ const ejerciciosLocal = [
     /* espalda */
     { id: "0012", nombre: "Jalón al pecho - Agarre abierto (Maquina)", gif: "/gifs/jalon-pecho-abierto.gif", parteDelCuerpo: "Espalda", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"], equipamiento: "Maquinas" },
     { id: "0055", nombre: "Jalón al pecho - Agarre neutro (Maquina)", gif: "/gifs/jalon-pecho-neutro.jpg", parteDelCuerpo: "Espalda", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"], equipamiento: "Maquinas" },
-    { id: "0013", nombre: "Jalón al pecho - Agarre cerrado (Maquina)", gif: "/gifs/jalon-pecho-cerrado.gif", parteDelCuerpo: "Espalda", subMusculos: ["Biceps"], equipamiento: "Maquinas", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"] },
+    { id: "0013", nombre: "Jalón al pecho - Agarre cerrado (Maquina)", gif: "/gifs/jalon-pecho-cerrado.gif", parteDelCuerpo: "Espalda", equipamiento: "Maquinas", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"] },
     { id: "0014", nombre: "Remo en punta (Maquina)", gif: "/gifs/remo-punta.gif", parteDelCuerpo: "Espalda", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"], equipamiento: "Maquinas" },
     { id: "0015", nombre: "Remo inclinado (Barra)", gif: "/gifs/remo-parado.gif", parteDelCuerpo: "Espalda", equipamiento: "Barra", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"] },
     { id: "0016", nombre: "Remo sentado - Agarre V (Maquina)", gif: "/gifs/remo-sentado-v.gif", parteDelCuerpo: "Espalda", equipamiento: "Maquinas", subMusculos: ["Dorsales", "Bíceps", "Antebrazos"] },
@@ -49,6 +49,7 @@ const ejerciciosLocal = [
     { id: "0029", nombre: "Patada de gluteo (Polea)", gif: "/gifs/patada-gluteo-polea.jpg", parteDelCuerpo: "Gluteos", equipamiento: "Polea", subMusculos: ["Isquiotibiales"] },
     { id: "0030", nombre: "Elevacion de cadera smith (Maquina)", gif: "/gifs/elevacion-cadera-smith.gif", parteDelCuerpo: "Gluteos", equipamiento: "Maquinas", subMusculos: ["Isquiotibiales", "Cuadriceps", "Adductores"] },
     { id: "0031", nombre: "Elevacion de cadera (Barra)", gif: "/gifs/elevacion-cadera-barra.jpg", parteDelCuerpo: "Gluteos", equipamiento: "Barra", subMusculos: ["Isquiotibiales", "Cuadriceps", "Adductores"] },
+    { id: "0057", nombre: "Hiperextension (Maquina)", gif: "/gifs/hiperextension-maq.jpg", parteDelCuerpo: "Gluteos", equipamiento: "Maquinas", subMusculos: ["Isquiotibiales", "Espalda"] },
 
     { id: "0032", nombre: "Step up (Mancuernas)", gif: "/gifs/step-up-manc.gif", parteDelCuerpo: "Gluteos", equipamiento: "Mancuernas", subMusculos: ["Isquiotibiales", "Cuadriceps"] },
 
@@ -60,9 +61,10 @@ const ejerciciosLocal = [
     /* abductores */
     { id: "0035", nombre: "Abduccion de caderas (Maquina)", gif: "/gifs/abduccion-cad-maq.jpg", parteDelCuerpo: "Abductores", equipamiento: "Maquinas", subMusculos: [] },
     { id: "0036", nombre: "Abduccion de caderas (Polea)", gif: "/gifs/abduccion-cad-polea.jpg", parteDelCuerpo: "Abductores", equipamiento: "Polea", subMusculos: [] },
+    { id: "0058", nombre: "Abduccion de caderas de pie (Maquina)", gif: "/gifs/abduccion-cad-maq-pie.jpg", parteDelCuerpo: "Abductores", equipamiento: "Maquinas", subMusculos: ["Gluteos"] },
 
     /* hombro */
-    { id: "0037", nombre: "Vuelos posteriores (Mancuernas)", gif: "/gifs/vuelos-poste-manc.gif", parteDelCuerpo: "Hombros", equipamiento: "Mancuernas", subMusculos: ["Espalda"] },
+    { id: "0037", nombre: "Vuelos posteriores (Mancuernas)", gif: "/gifs/vuelos-poste-manc.gif", parteDelCuerpo: "Hombros", equipamiento: "Mancuernas", subMusculos: ["Trapecio"] },
     { id: "0038", nombre: "Vuelos posteriores (Maquina)", gif: "/gifs/vuelos-poste-maq.gif", parteDelCuerpo: "Hombros", equipamiento: "Maquinas", subMusculos: ["Espalda"] },
     { id: "0039", nombre: "Vuelos posteriores (Polea)", gif: "/gifs/vuelos-poste-polea.jpg", parteDelCuerpo: "Hombros", equipamiento: "Polea", subMusculos: ["Espalda"] },
     { id: "0040", nombre: "Vuelos posteriores invertido (Mancuernas)", gif: "/gifs/vuelos-poste-invertido.jpg", parteDelCuerpo: "Hombros", equipamiento: "Mancuernas", subMusculos: ["Espalda"] },
@@ -76,7 +78,7 @@ const ejerciciosLocal = [
     { id: "0048", nombre: "Press militar sentado (Mancuernas)", gif: "/gifs/press-militar-mac-s.jpg", parteDelCuerpo: "Hombros", equipamiento: "Mancuernas", subMusculos: ["Triceps"] },
     { id: "0049", nombre: "Press militar parado (Barra)", gif: "/gifs/press-militar-b-p.jpg", parteDelCuerpo: "Hombros", equipamiento: "Barra", subMusculos: ["Triceps", "Abdominales"] },
     { id: "0050", nombre: "Press militar sentado (Mancuernas)", gif: "/gifs/press-militar-b-s.jpg", parteDelCuerpo: "Hombros", equipamiento: "Mancuernas", subMusculos: ["Triceps"] },
-    { id: "0051", nombre: "Tiron a la cara (Polea)", gif: "/gifs/face-pull.jpg", parteDelCuerpo: "Hombros", equipamiento: "Polea", subMusculos: ["Biceps"] },
+    { id: "0051", nombre: "Tiron a la cara (Polea)", gif: "/gifs/face-pull.jpg", parteDelCuerpo: "Hombros", equipamiento: "Polea", subMusculos: ["Espalda"] },
 
 
     /* abdominales */
