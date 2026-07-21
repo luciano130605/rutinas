@@ -59,33 +59,3 @@ export async function cancelServerPush(id) {
     });
   } catch (e) { /* silencioso */ }
 }
-
-
-export async function scheduleReminder({ id, enabled, time, routines }) {
-  try {
-    const subscription = await getPushSubscription();
-    if (!subscription) return null;
-    const tzOffsetMinutes = new Date().getTimezoneOffset();
-    const res = await fetch(`${WORKER_URL}/reminder`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, subscription, enabled, time, tzOffsetMinutes, routines }),
-    });
-    const data = await res.json();
-    return data.id;
-  } catch (e) {
-    console.error('[push] no se pudo agendar el reminder', e);
-    return null;
-  }
-}
-
-export async function cancelReminder(id) {
-  if (!id) return;
-  try {
-    await fetch(`${WORKER_URL}/reminder/cancel`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-  } catch (e) { /* silencioso */ }
-}

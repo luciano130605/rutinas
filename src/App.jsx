@@ -7,7 +7,6 @@ import RutinaCrear from './components/rutinaCrear';
 import RutinaCurso from './components/RutinaCurso';
 import HistorialPage from './components/historialPage';
 import HistorialDetalle from './components/HistorialDetalle';
-import { scheduleReminder, cancelReminder } from './utils/push';
 
 import BackupModal from './components/BackupModal';
 import { encodeBackup, decodeBackup, downloadJSON, readJSONFile } from './utils/backup';
@@ -30,9 +29,7 @@ export default function App() {
   const [customExercises, setCustomExercises] = useState([]);
   const [restDefault, setRestDefault] = useState(90);
   const [loaded, setLoaded] = useState(false);
-  const [remindersEnabled, setRemindersEnabled] = useState(false);
-  const [reminderTime, setReminderTime] = useState('09:00');
-  const [reminderId, setReminderId] = useState(null);
+
 
   const [backupModal, setBackupModal] = useState(null);
   const [pendingImport, setPendingImport] = useState(null);
@@ -82,16 +79,6 @@ export default function App() {
   // ---------- load ----------
   useEffect(() => {
     (async () => {
-      try { const r = await window.storage.get('gym_reminders_enabled', false); if (r && r.value) setRemindersEnabled(JSON.parse(r.value)); } catch (e) { }
-      try { const r = await window.storage.get('gym_reminder_time', false); if (r && r.value) setReminderTime(JSON.parse(r.value)); } catch (e) { }
-      try {
-        const r = await window.storage.get('gym_reminder_id', false);
-        if (r && r.value) setReminderId(JSON.parse(r.value));
-      } catch (e) {
-        const newId = uid();
-        setReminderId(newId);
-        try { await window.storage.set('gym_reminder_id', JSON.stringify(newId), false); } catch (e2) { }
-      }
       try { const r = await window.storage.get('gym_routines', false); if (r && r.value) setRoutines(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_history', false); if (r && r.value) setHistory(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_modo_oscuro', false); if (r && r.value) setModoOscuro(JSON.parse(r.value)); } catch (e) { }
@@ -114,8 +101,6 @@ export default function App() {
       try { await window.storage.set('gym_rest_default', JSON.stringify(restDefault), false); } catch (e) { console.error(e); }
       try { await window.storage.set('gym_modo_oscuro', JSON.stringify(modoOscuro), false); } catch (e) { console.error(e); }
       try { await window.storage.set('gym_acento', JSON.stringify(acento), false); } catch (e) { console.error(e); }
-      try { await window.storage.set('gym_reminders_enabled', JSON.stringify(remindersEnabled), false); } catch (e) { }
-      try { await window.storage.set('gym_reminder_time', JSON.stringify(reminderTime), false); } catch (e) { }
       try { await window.storage.set('gym_toaster_position', JSON.stringify(toasterPosition), false); } catch (e) { console.error(e); }
     }, 350);
   }, [routines, history, customExercises, restDefault, loaded]);
@@ -131,20 +116,7 @@ export default function App() {
   }, []);
 
 
-  const reminderSyncRef = useRef(null);
-  useEffect(() => {
-    if (!loaded || !reminderId) return;
-    clearTimeout(reminderSyncRef.current);
-    reminderSyncRef.current = setTimeout(() => {
-      scheduleReminder({
-        id: reminderId,
-        enabled: remindersEnabled,
-        time: reminderTime,
-        routines: routines.filter(r => (r.days || []).length > 0).map(r => ({ id: r.id, name: r.name, days: r.days })),
-      });
-    }, 500);
-    return () => clearTimeout(reminderSyncRef.current);
-  }, [loaded, reminderId, remindersEnabled, reminderTime, routines]);
+
 
   // ---------- NUEVO: importar rutina desde link (?import=CODE) ----------
 
@@ -524,12 +496,7 @@ export default function App() {
   }
 
 
-  function toggleReminders() {
-    setRemindersEnabled(v => !v);
-  }
-  function changeReminderTime(time) {
-    setReminderTime(time);
-  }
+
 
   async function handleImportFile(file) {
     const kind = backupModal.kind;
@@ -1378,10 +1345,6 @@ export default function App() {
             onChangeAcento={setAcento}
             toasterPosition={toasterPosition}
             onChangeToasterPosition={setToasterPosition}
-            remindersEnabled={remindersEnabled}
-            onToggleReminders={toggleReminders}
-            reminderTime={reminderTime}
-            onChangeReminderTime={changeReminderTime}
           />
         )}
 
@@ -1503,10 +1466,6 @@ export default function App() {
             onChangeAcento={setAcento}
             toasterPosition={toasterPosition}
             onChangeToasterPosition={setToasterPosition}
-            remindersEnabled={remindersEnabled}
-            onToggleReminders={toggleReminders}
-            reminderTime={reminderTime}
-            onChangeReminderTime={changeReminderTime}
           />
         )}
 
