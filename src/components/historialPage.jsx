@@ -123,6 +123,7 @@ export default function HistorialPage({ history, onSelectEntry, onDeleteEntry, o
               </div>
             </div>
 
+
             <div className="hist-search-row">
               <div className="hist-search-input">
                 <Search size={15} className='icon' />

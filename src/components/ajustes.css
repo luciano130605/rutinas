@@ -149,8 +149,28 @@
     background: var(--acento-transp);
     color: var(--txt-btn);
 }
+
 .ajustes.select:hover {
     border-color: var(--acento) !important;
     background: var(--acento-transp);
     color: var(--txt-btn);
+}
+
+
+.input-time-ajustes {
+    background: var(--bg-secundario, #1a1a1a);
+    border: 1px solid var(--borde, #2a2a2a);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: inherit;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+}
+
+.input-time-ajustes::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.6;
+    cursor: pointer;
 }

@@ -18,6 +18,8 @@ export default function TabBar({
   onChangeAcento,
   toasterPosition,
   onChangeToasterPosition,
+  reminderTime,
+  onChangeReminderTime,
 }) {
   const [openSettings, setOpenSettings] = useState(false);
   const wrapRef = useRef(null);
@@ -107,6 +109,8 @@ export default function TabBar({
           onChangeAcento={onChangeAcento}
           toasterPosition={toasterPosition}
           onChangeToasterPosition={onChangeToasterPosition}
+          reminderTime={reminderTime}
+          onChangeReminderTime={onChangeReminderTime}
         />
       </div>
     </div>

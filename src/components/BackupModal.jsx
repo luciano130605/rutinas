@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Download, Link as LinkIcon, Upload, FileDown } from 'lucide-react';
+import { X, Download, Link as LinkIcon, Upload, FileDown, ClipboardPaste } from 'lucide-react';
 import "./backupModal.css"
 
 export default function BackupModal({ mode, kind, onClose, onExportFile, onExportLink, onImportText, onImportFile }) {
@@ -11,6 +11,15 @@ export default function BackupModal({ mode, kind, onClose, onExportFile, onExpor
         const file = e.target.files?.[0];
         if (file) onImportFile(file);
         e.target.value = '';
+    };
+
+    const handlePaste = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            setPasteValue(text);
+        } catch {
+            alert("No se pudo acceder al portapapeles.");
+        }
     };
 
     return (
@@ -42,14 +51,24 @@ export default function BackupModal({ mode, kind, onClose, onExportFile, onExpor
                     <>
                         <h3>Importar {kindLabel}</h3>
                         <p className="header-sub" style={{ marginBottom: 16 }}>Pegá el link o subí el archivo .json.</p>
-                        <input
-                            className="input-link"
-                            rows={3}
-                            placeholder="Pegá acá el link o el código..."
-                            value={pasteValue}
-                            onChange={e => setPasteValue(e.target.value)}
+                        <div className="input-link-cont">
+                            <input
+                                className="input-link"
+                                placeholder="Pegá acá el link o el código..."
+                                value={pasteValue}
+                                onChange={e => setPasteValue(e.target.value)}
+                            />
 
-                        />
+                            <button
+                                className="mini-btn modal"
+                                type="button"
+                                title="Pegar"
+                                aria-label="Pegar"
+                                onClick={handlePaste}
+                            >
+                                <ClipboardPaste size={16} />
+                            </button>
+                        </div>
                         <button
                             className="btns agregar modal"
                             disabled={!pasteValue.trim()}

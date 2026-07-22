@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import "./ajustes.css";
-import { Check, Moon, Sun, RotateCcw, ArrowUpToLine, ArrowDownToLine } from 'lucide-react';
+import { Check, Moon, Sun, RotateCcw, ArrowUpToLine, ArrowDownToLine, Bell } from 'lucide-react';
 
 const ACENTOS = [
     { id: 'acento-verde', nombre: 'Verde', color: '#c6ff34' },
@@ -12,6 +12,7 @@ const ACENTOS = [
 const MODO_DEFAULT = true; // oscuro
 const ACENTO_DEFAULT = 'acento-verde';
 const POSICION_DEFAULT = 'bottom';
+const REMINDER_TIME_DEFAULT = '10:00';
 
 export default function Ajustes({
     open,
@@ -21,6 +22,8 @@ export default function Ajustes({
     onChangeAcento,
     toasterPosition,
     onChangeToasterPosition,
+    reminderTime,
+    onChangeReminderTime,
 }) {
     const [resetFeedback, setResetFeedback] = useState(false);
 
@@ -28,6 +31,7 @@ export default function Ajustes({
         if (modoOscuro !== MODO_DEFAULT) onToggleModo();
         onChangeAcento(ACENTO_DEFAULT);
         onChangeToasterPosition(POSICION_DEFAULT);
+        onChangeReminderTime(REMINDER_TIME_DEFAULT);
 
         setResetFeedback(true);
         setTimeout(() => setResetFeedback(false), 1500);
@@ -78,6 +82,22 @@ export default function Ajustes({
                 >
                     Abajo
                 </button>
+            </div>
+
+            <div className="ajustes-dropdown-separador" />
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div className="ajustes-dropdown-seccion-titulo" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <Bell size={14} />
+                    Hora del recordatorio
+                </div>
+
+                <input
+                    type="time"
+                    className="input-time-ajustes"
+                    value={reminderTime}
+                    onChange={(e) => onChangeReminderTime(e.target.value)}
+                />
             </div>
 
             <div className="ajustes-dropdown-separador" />

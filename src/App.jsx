@@ -7,7 +7,7 @@ import RutinaCrear from './components/rutinaCrear';
 import RutinaCurso from './components/RutinaCurso';
 import HistorialPage from './components/historialPage';
 import HistorialDetalle from './components/HistorialDetalle';
-
+import { scheduleReminderPush, cancelReminderPush } from './utils/push';
 import BackupModal from './components/BackupModal';
 import { encodeBackup, decodeBackup, downloadJSON, readJSONFile } from './utils/backup';
 
@@ -37,6 +37,8 @@ export default function App() {
   const [activeRoutineId, setActiveRoutineId] = useState(null);
   const [activeHistoryId, setActiveHistoryId] = useState(null);
   const [editorDraft, setEditorDraft] = useState(null);
+  const [reminderTime, setReminderTime] = useState('10:00');
+  const [reminderPushId, setReminderPushId] = useState(null);
   const [session, setSession] = useState(null);
   const [kebabOpen, setKebabOpen] = useState(false);
 
@@ -79,6 +81,8 @@ export default function App() {
   // ---------- load ----------
   useEffect(() => {
     (async () => {
+      try { const r = await window.storage.get('gym_reminder_time', false); if (r && r.value) setReminderTime(JSON.parse(r.value)); } catch (e) { }
+      try { const r = await window.storage.get('gym_reminder_push_id', false); if (r && r.value) setReminderPushId(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_routines', false); if (r && r.value) setRoutines(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_history', false); if (r && r.value) setHistory(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_modo_oscuro', false); if (r && r.value) setModoOscuro(JSON.parse(r.value)); } catch (e) { }
@@ -95,6 +99,8 @@ export default function App() {
     if (!loaded) return;
     clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(async () => {
+      try { await window.storage.set('gym_reminder_time', JSON.stringify(reminderTime), false); } catch (e) { console.error(e); }
+      try { await window.storage.set('gym_reminder_push_id', JSON.stringify(reminderPushId), false); } catch (e) { console.error(e); }
       try { await window.storage.set('gym_routines', JSON.stringify(routines), false); } catch (e) { console.error(e); }
       try { await window.storage.set('gym_history', JSON.stringify(history), false); } catch (e) { console.error(e); }
       try { await window.storage.set('gym_custom_exercises', JSON.stringify(customExercises), false); } catch (e) { console.error(e); }
@@ -119,6 +125,33 @@ export default function App() {
 
 
   // ---------- NUEVO: importar rutina desde link (?import=CODE) ----------
+
+  useEffect(() => {
+    if (!loaded) return;
+
+    const routinesConDias = routines
+      .filter(r => r.days?.length > 0)
+      .map(r => ({ id: r.id, name: r.name, days: r.days }));
+
+    if (routinesConDias.length === 0) {
+      if (reminderPushId) {
+        cancelReminderPush(reminderPushId);
+        setReminderPushId(null);
+      }
+      return;
+    }
+
+    const [hh, mm] = reminderTime.split(':').map(Number);
+    scheduleReminderPush({
+      hour: hh,
+      minute: mm,
+      routines: routinesConDias,
+      id: reminderPushId || undefined,
+    }).then(id => {
+      if (id && id !== reminderPushId) setReminderPushId(id);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, routines, reminderTime]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -1342,6 +1375,8 @@ export default function App() {
             modoOscuro={modoOscuro}
             onToggleModo={() => setModoOscuro(v => !v)}
             acento={acento}
+            reminderTime={reminderTime}
+            onChangeReminderTime={setReminderTime}
             onChangeAcento={setAcento}
             toasterPosition={toasterPosition}
             onChangeToasterPosition={setToasterPosition}
@@ -1466,6 +1501,8 @@ export default function App() {
             onChangeAcento={setAcento}
             toasterPosition={toasterPosition}
             onChangeToasterPosition={setToasterPosition}
+            reminderTime={reminderTime}
+            onChangeReminderTime={setReminderTime}
           />
         )}
 

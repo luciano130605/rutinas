@@ -71,3 +71,33 @@ export async function cancelServerPush(id) {
     });
   } catch (e) { /* silencioso */ }
 }
+
+
+export async function scheduleReminderPush({ hour, minute, routines, id }) {
+  try {
+    const subscription = await getPushSubscription();
+    if (!subscription) return null;
+    const tzOffsetMinutes = new Date().getTimezoneOffset();
+    const res = await fetch(`${WORKER_URL}/schedule-reminder`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription, hour, minute, tzOffsetMinutes, routines, id }),
+    });
+    const data = await res.json();
+    return data.id;
+  } catch (e) {
+    console.error('[push] no se pudo agendar recordatorio', e);
+    return null;
+  }
+}
+
+export async function cancelReminderPush(id) {
+  if (!id) return;
+  try {
+    await fetch(`${WORKER_URL}/cancel-reminder`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+  } catch (e) { /* silencioso */ }
+}
