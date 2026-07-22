@@ -24,6 +24,8 @@ export default function Ajustes({
     onChangeToasterPosition,
     reminderTime,
     onChangeReminderTime,
+    reminderEnabled,
+    onToggleReminder,
 }) {
     const [resetFeedback, setResetFeedback] = useState(false);
 
@@ -32,7 +34,7 @@ export default function Ajustes({
         onChangeAcento(ACENTO_DEFAULT);
         onChangeToasterPosition(POSICION_DEFAULT);
         onChangeReminderTime(REMINDER_TIME_DEFAULT);
-
+        if (!reminderEnabled) onToggleReminder();
         setResetFeedback(true);
         setTimeout(() => setResetFeedback(false), 1500);
     };
@@ -44,7 +46,7 @@ export default function Ajustes({
                 <div className="ajustes-dropdown-seccion-titulo">Color de acento</div>
 
                 <button
-                    className='btn'
+                    className='mini-btn a'
                     role="switch"
                     aria-checked={modoOscuro}
                     onClick={onToggleModo}
@@ -86,19 +88,26 @@ export default function Ajustes({
 
             <div className="ajustes-dropdown-separador" />
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div className="ajustes-dropdown-seccion-titulo" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <Bell size={14} />
-                    Hora del recordatorio
-                </div>
 
-                <input
-                    type="time"
-                    className="input-time-ajustes"
-                    value={reminderTime}
-                    onChange={(e) => onChangeReminderTime(e.target.value)}
-                />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div className="ajustes-dropdown-seccion-titulo">Recordatorio diario</div>
+                <button
+                    className={`mini-btn noti ${reminderEnabled ? "activa" : ""}`}
+                    role="switch"
+                    aria-checked={reminderEnabled}
+                    onClick={onToggleReminder}
+                >
+                    {reminderEnabled ? "activado" : "Desactivado"}
+                </button>
             </div>
+
+            <input
+                type="time"
+                className={`input-time-ajustes ${!reminderEnabled ? "disabled" : ""}`}
+                value={reminderTime}
+                onChange={(e) => onChangeReminderTime(e.target.value)}
+                disabled={!reminderEnabled}
+            />
 
             <div className="ajustes-dropdown-separador" />
 

@@ -6,6 +6,16 @@ import "./rutina.css"
 import { DescansoBotonFlotante, resetDescansoState } from './TiempoDescansoToast';
 import { sileo } from 'sileo';
 
+function formatElapsedFull(ms) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  const mm = h > 0 ? String(m).padStart(2, '0') : String(m);
+  const ss = String(s).padStart(2, '0');
+  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+}
+
 export default function RutinaCurso({
   session, restTimer, restDefault, history = [],
   onCancel, onToggleSet, onUpdateField, onAddSet, onFinish,
@@ -91,6 +101,23 @@ export default function RutinaCurso({
     const set = ex.sets[si];
     const willComplete = !set.done && ex.sets.every((st, idx) => idx === si || st.done);
 
+    let weightVal = set.weight;
+    let repsVal = set.reps;
+    if (!set.done) {
+      if ((weightVal === '' || weightVal == null) && set.placeholderWeight) {
+        weightVal = set.placeholderWeight;
+        onUpdateField(exi, si, 'weight', weightVal);
+      }
+      if ((repsVal === '' || repsVal == null) && set.placeholderReps) {
+        repsVal = set.placeholderReps;
+        onUpdateField(exi, si, 'reps', repsVal);
+      }
+    }
+
+    const isLastExercise = exi === s.exercises.length - 1;
+    const isLastSet = si === ex.sets.length - 1;
+    const isVeryLastSet = isLastExercise && isLastSet;
+
     let isPR = false;
     let nombre, w, r;
     if (willComplete) {
@@ -101,13 +128,16 @@ export default function RutinaCurso({
       isPR = w > 0 && (!record || w > record.weight || (w === record.weight && r > record.reps));
     }
 
-    onToggleSet(exi, si, { celebrate: isPR });
+    onToggleSet(exi, si, { celebrate: isPR, skipRest: isVeryLastSet });
 
     if (isPR) {
       sileo.success({
         title: `¡Nuevo récord en ${nombre} 🏆`,
         description: `${w}kg × ${r} reps`,
         duration: 4800,
+        styles: {
+          title: "sileo-title-pr",
+        },
       });
     }
 
@@ -163,7 +193,7 @@ export default function RutinaCurso({
         <div className="btn" onClick={onCancel}><X size={18} /></div>
         <div>
           <div className="tiempo" style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-            {formatElapsed(elapsedMs)}
+            {formatElapsedFull(elapsedMs)}
             {onToggleSessionPause && (
               <span className={`mini-btn`} title={s.paused ? 'Reanudar' : 'Pausar'} onClick={onToggleSessionPause}>
                 {s.paused ? <Play size={13} /> : <Pause size={13} />}
@@ -250,15 +280,7 @@ export default function RutinaCurso({
                 } : {})
               }}
             >
-              {record && (
-                <div
-                  title={`Récord: ${record.weight}kg × ${record.reps}`}
-                  className='badge-record'
-                >
-                  <Award size={12} />
-                  {record.weight}kg × {record.reps}
-                </div>
-              )}
+
 
               <div className="ejercicio-header" style={{ cursor: 'pointer' }}>
                 <div className='sub-cont-wrap' style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -336,13 +358,21 @@ export default function RutinaCurso({
                           type="text" inputMode="decimal"
                           value={set.weight}
                           placeholder={set.placeholderWeight || '0'}
-                          onChange={e => onUpdateField(exi, si, 'weight', e.target.value)}
+                          onChange={e => {
+                            let val = e.target.value.replace(',', '.');
+                            const parts = val.split('.');
+                            if (parts.length > 2) {
+                              val = parts[0] + '.' + parts.slice(1).join('');
+                            }
+                            onUpdateField(exi, si, 'weight', val);
+                          }}
                         />
                         <input
                           type="text" inputMode="numeric"
                           value={set.reps}
                           placeholder={set.placeholderReps || '0'}
                           onChange={e => onUpdateField(exi, si, 'reps', e.target.value)}
+
                         />
                         <div className='check-cont'>
                           <button title='Terminado' className={`check ${set.done ? 'done' : ''}`} onClick={() => handleToggleSet(exi, si)}>
@@ -373,7 +403,7 @@ export default function RutinaCurso({
         })}
 
         {pendingEntries.length === 0 && doneEntries.length > 0 && !showDone && (
-          <div className="header-sub" style={{ textAlign: 'center', padding: '20px 0', color:"var(--acento)" }}>
+          <div className="header-sub" style={{ textAlign: 'center', padding: '20px 0', color: "var(--acento)" }}>
             ¡Terminaste todos los ejercicios! 🎉
           </div>
         )}

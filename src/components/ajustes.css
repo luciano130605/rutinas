@@ -158,19 +158,58 @@
 
 
 .input-time-ajustes {
-    background: var(--bg-secundario, #1a1a1a);
-    border: 1px solid var(--borde, #2a2a2a);
+    background: var(--componente);
+    border: 1px solid var(--borde);
     border-radius: 8px;
+    margin-top: 10px;
     padding: 6px 10px;
-    color: inherit;
-    font-size: 13px;
+    width: 90%;
+    color: var(--texto);
     font-family: inherit;
     outline: none;
+    transition: all .3s;
     cursor: pointer;
+}
+
+.input-time-ajustes.disabled {
+    color: var(--texto-gris);
+    cursor: not-allowed;
+}
+
+.input-time-ajustes.disabled:hover {
+    color: var(--texto-gris) !important;
+    border: 1px solid var(--borde) !important;
+
+}
+
+.input-time-ajustes:hover {
+    border-color: var(--borde-hover);
 }
 
 .input-time-ajustes::-webkit-calendar-picker-indicator {
     filter: invert(1);
     opacity: 0.6;
     cursor: pointer;
+}
+
+.a {
+    margin-bottom: 8px;
+    transition: all .3s;
+}
+
+.noti {
+    width: 32% !important;
+    font-size: .7rem;
+}
+
+.noti.activa {
+    background: var(--acento-transp);
+    color: var(--txt-btn);
+    border-color: var(--acento);
+}
+
+.noti.activa:hover {
+    background: var(--acento-transp);
+    color: var(--txt-btn);
+    border-color: var(--acento);
 }

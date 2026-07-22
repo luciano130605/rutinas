@@ -29,7 +29,7 @@ export default function App() {
   const [customExercises, setCustomExercises] = useState([]);
   const [restDefault, setRestDefault] = useState(90);
   const [loaded, setLoaded] = useState(false);
-
+  const [reminderEnabled, setReminderEnabled] = useState(true);
 
   const [backupModal, setBackupModal] = useState(null);
   const [pendingImport, setPendingImport] = useState(null);
@@ -81,6 +81,7 @@ export default function App() {
   // ---------- load ----------
   useEffect(() => {
     (async () => {
+      try { const r = await window.storage.get('gym_reminder_enabled', false); if (r && r.value !== undefined) setReminderEnabled(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_reminder_time', false); if (r && r.value) setReminderTime(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_reminder_push_id', false); if (r && r.value) setReminderPushId(JSON.parse(r.value)); } catch (e) { }
       try { const r = await window.storage.get('gym_routines', false); if (r && r.value) setRoutines(JSON.parse(r.value)); } catch (e) { }
@@ -109,7 +110,7 @@ export default function App() {
       try { await window.storage.set('gym_acento', JSON.stringify(acento), false); } catch (e) { console.error(e); }
       try { await window.storage.set('gym_toaster_position', JSON.stringify(toasterPosition), false); } catch (e) { console.error(e); }
     }, 350);
-  }, [routines, history, customExercises, restDefault, loaded]);
+  }, [routines, history, customExercises, restDefault, loaded, reminderTime, reminderEnabled, reminderPushId, modoOscuro, acento, toasterPosition]);
 
   const showToast = useCallback((msg, type = 'success') => {
     sileo[type]({
@@ -128,6 +129,14 @@ export default function App() {
 
   useEffect(() => {
     if (!loaded) return;
+
+    if (!reminderEnabled) {
+      if (reminderPushId) {
+        cancelReminderPush(reminderPushId);
+        setReminderPushId(null);
+      }
+      return;
+    }
 
     const routinesConDias = routines
       .filter(r => r.days?.length > 0)
@@ -151,7 +160,7 @@ export default function App() {
       if (id && id !== reminderPushId) setReminderPushId(id);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, routines, reminderTime]);
+  }, [loaded, routines, reminderTime, reminderEnabled]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -1377,6 +1386,8 @@ export default function App() {
             acento={acento}
             reminderTime={reminderTime}
             onChangeReminderTime={setReminderTime}
+            reminderEnabled={reminderEnabled}
+            onToggleReminder={() => setReminderEnabled(v => !v)}
             onChangeAcento={setAcento}
             toasterPosition={toasterPosition}
             onChangeToasterPosition={setToasterPosition}
@@ -1503,6 +1514,8 @@ export default function App() {
             onChangeToasterPosition={setToasterPosition}
             reminderTime={reminderTime}
             onChangeReminderTime={setReminderTime}
+            reminderEnabled={reminderEnabled}                    // 👈 agregar
+            onToggleReminder={() => setReminderEnabled(v => !v)} // 👈 agregar
           />
         )}
 
