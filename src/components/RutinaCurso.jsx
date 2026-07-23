@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Check, Plus, Copy, Repeat, Pencil, ChevronsUpDown, ChevronsDownUp, Pause, Play, Award, Dumbbell, Eye, CheckCircle2 } from 'lucide-react';
 import { formatElapsed } from '../utils/time';
 import EjercicioModal from './ejercicioModal';
+import ResumenRutina from './ResumenRutina';
 import "./rutina.css"
 import { DescansoBotonFlotante, resetDescansoState } from './TiempoDescansoToast';
 import { sileo } from 'sileo';
@@ -17,7 +18,7 @@ function formatElapsedFull(ms) {
 }
 
 export default function RutinaCurso({
-  session, restTimer, restDefault, history = [],
+  session, restTimer, restDefault, history = [], routineName,
   onCancel, onToggleSet, onUpdateField, onAddSet, onFinish,
   onSetRestDefault, onAdjustRest, onTogglePause, onDismissRest,
   onDuplicateLastSet, onOpenPicker, onToggleSessionPause, onEditExercise,
@@ -32,6 +33,8 @@ export default function RutinaCurso({
   const [gifFailedIds, setGifFailedIds] = React.useState(new Set());
   const exerciseRefs = React.useRef({});
   const [showDone, setShowDone] = React.useState(false);
+  const [resumenOpen, setResumenOpen] = React.useState(false);
+  const [prsSesion, setPrsSesion] = React.useState([]);
   const [finishingKeys, setFinishingKeys] = React.useState(new Set());
   React.useEffect(() => {
     if (s?.paused) return;
@@ -127,6 +130,9 @@ export default function RutinaCurso({
       const record = records.get(nombre);
       isPR = w > 0 && (!record || w > record.weight || (w === record.weight && r > record.reps));
     }
+
+    // Tiene que ir DESPUÉS de calcular isPR/nombre/w/r, si no todavía son undefined (TDZ)
+    if (isPR) setPrsSesion(prev => [...prev, { nombre, weight: w, reps: r }]);
 
     onToggleSet(exi, si, { celebrate: isPR, skipRest: isVeryLastSet });
 
@@ -407,10 +413,18 @@ export default function RutinaCurso({
             ¡Terminaste todos los ejercicios! 🎉
           </div>
         )}
-        <button className="btns primario" style={{ marginTop: 6, marginBottom: restTimer ? 110 : 0 }} onClick={onFinish}>Finalizar rutina</button>
+        <button className="btns primario" style={{ marginTop: 6, marginBottom: restTimer ? 110 : 0 }} onClick={() => setResumenOpen(true)}>Finalizar rutina</button>
       </div >
 
-
+      {resumenOpen && (
+        <ResumenRutina
+          session={s}
+          routineName={routineName}
+          prs={prsSesion}
+          onClose={() => setResumenOpen(false)}
+          onConfirm={(guardarEnHistorial) => onFinish({ guardarEnHistorial })}
+        />
+      )}
       {
         gifPreview && (
           <div className="modal-overlay" onClick={() => setGifPreview(null)}>

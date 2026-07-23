@@ -21,6 +21,7 @@ import Ajustes from './components/ajustes';
 import ProximamentePage from './components/proximamente';
 import { openDescansoToast } from './components/descansoToastModal';
 import openTiempoDescansoToast, { resetDescansoState } from './components/TiempoDescansoToast';
+import ResumenRutina from './components/Resumenrutina';
 
 export default function App() {
   const [screen, setScreen] = useState('routines');
@@ -734,51 +735,51 @@ export default function App() {
     });
   }
 
-  function finishSession() {
-    const s = session;
-    // Ahora guardamos también el músculo de cada ejercicio (viene de session.exercises,
-    // que a su vez viene de la rutina), así el historial puede filtrarse por músculo
-    // sin depender de que el ejercicio siga existiendo en la base más adelante.
-    const completedExercises = s.exercises
-      .map(ex => ({
-        name: ex.name,
-        muscle: ex.muscle || '',
-        notes: ex.notes || '',
-        sets: ex.sets.filter(st => (st.weight !== '' || st.reps !== ''))
-      }))
-      .filter(ex => ex.sets.length > 0);
-    const totalVolume = completedExercises.reduce((sum, ex) => sum + ex.sets.reduce((a, st) => a + ((+st.weight || 0) * (+st.reps || 0)), 0), 0);
-    const totalSets = completedExercises.reduce((a, ex) => a + ex.sets.length, 0);
+function finishSession({ guardarEnHistorial = true } = {}) {
+  const s = session;
+  const completedExercises = s.exercises
+    .map(ex => ({
+      name: ex.name,
+      muscle: ex.muscle || '',
+      notes: ex.notes || '',
+      sets: ex.sets.filter(st => st.done)
+    }))
+    .filter(ex => ex.sets.length > 0);
 
-    if (completedExercises.length > 0) {
-      const pausedMs = s.paused ? (s.pausedMs || 0) + (Date.now() - s.pausedAt) : (s.pausedMs || 0);
-      setHistory(h => [{
-        id: uid(), routineId: s.routineId, routineName: s.routineName, date: Date.now(),
-        durationSec: Math.floor((Date.now() - s.startedAt - pausedMs) / 1000),
-        exercises: completedExercises, totalVolume, totalSets
-      }, ...h]);
+  const totalVolume = completedExercises.reduce((sum, ex) => sum + ex.sets.reduce((a, st) => a + ((+st.weight || 0) * (+st.reps || 0)), 0), 0);
+  const totalSets = completedExercises.reduce((a, ex) => a + ex.sets.length, 0);
 
-      setRoutines(rs => rs.map(r => {
-        if (r.id !== s.routineId) return r;
-        const rCopy = JSON.parse(JSON.stringify(r));
-        s.exercises.forEach(sEx => {
-          const rEx = rCopy.exercises.find(e => e.name === sEx.name);
-          if (rEx) {
-            sEx.sets.forEach((st, i) => {
-              if (rEx.sets[i] && st.weight !== '') rEx.sets[i].weight = st.weight;
-              if (rEx.sets[i] && st.reps !== '') rEx.sets[i].reps = st.reps;
-            });
-          }
-        });
-        return rCopy;
-      }));
-    }
-    setRestTimer(null);
-    setSession(null);
-    setScreen('routines');
-    showToast(completedExercises.length > 0 ? 'Rutina guardada' : 'Rutina descartada');
+  const debeGuardar = guardarEnHistorial && completedExercises.length > 0;
+
+  if (debeGuardar) {
+    const pausedMs = s.paused ? (s.pausedMs || 0) + (Date.now() - s.pausedAt) : (s.pausedMs || 0);
+    setHistory(h => [{
+      id: uid(), routineId: s.routineId, routineName: s.routineName, date: Date.now(),
+      durationSec: Math.floor((Date.now() - s.startedAt - pausedMs) / 1000),
+      exercises: completedExercises, totalVolume, totalSets
+    }, ...h]);
+
+    setRoutines(rs => rs.map(r => {
+      if (r.id !== s.routineId) return r;
+      const rCopy = JSON.parse(JSON.stringify(r));
+      s.exercises.forEach(sEx => {
+        const rEx = rCopy.exercises.find(e => e.name === sEx.name);
+        if (rEx) {
+          sEx.sets.forEach((st, i) => {
+            if (rEx.sets[i] && st.weight !== '') rEx.sets[i].weight = st.weight;
+            if (rEx.sets[i] && st.reps !== '') rEx.sets[i].reps = st.reps;
+          });
+        }
+      });
+      return rCopy;
+    }));
   }
 
+  setRestTimer(null);
+  setSession(null);
+  setScreen('routines');
+  showToast(debeGuardar ? 'Rutina guardada' : 'Rutina descartada');
+}
   function cancelSession() {
     const toastId = sileo.action({
       title: "¿Salir sin guardar el entrenamiento?",
@@ -1370,13 +1371,15 @@ export default function App() {
       <div>
 
         {screen === 'routines' && (
-          <RutinaPage
-            routines={routines}
-            onNewRoutine={() => openEditor(null)}
-            onSelectRoutine={(id) => { setActiveRoutineId(id); setScreen('routineDetail'); setKebabOpen(false); }}
-            onExport={() => setBackupModal({ mode: 'export', kind: 'routines' })}
-            onImport={() => setBackupModal({ mode: 'import', kind: 'routines' })}
-          />
+          <>
+            <RutinaPage
+              routines={routines}
+              onNewRoutine={() => openEditor(null)}
+              onSelectRoutine={(id) => { setActiveRoutineId(id); setScreen('routineDetail'); setKebabOpen(false); }}
+              onExport={() => setBackupModal({ mode: 'export', kind: 'routines' })}
+              onImport={() => setBackupModal({ mode: 'import', kind: 'routines' })}
+            />
+          </>
         )}
         {screen === 'settings' && (
           <Ajustes
@@ -1449,6 +1452,7 @@ export default function App() {
           <RutinaCurso
             session={session}
             history={history}
+            routineName={session?.routineName} 
             restTimer={restTimer}
             restDefault={restDefault}
             onCancel={cancelSession}
