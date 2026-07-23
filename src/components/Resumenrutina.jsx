@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { X, Download, Share2, Trophy, Clock, Layers, Weight, Check } from 'lucide-react';
-import CuerpoMuscular, { calcularIntensidadesMusculares } from './CuerpoMuscular';
+import CuerpoMuscular, { calcularIntensidadesMusculares } from './Cuerpomuscular';
 import { sileo } from 'sileo';
 import './resumenRutina.css';
 
