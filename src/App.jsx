@@ -21,7 +21,7 @@ import Ajustes from './components/ajustes';
 import ProximamentePage from './components/proximamente';
 import { openDescansoToast } from './components/descansoToastModal';
 import openTiempoDescansoToast, { resetDescansoState } from './components/TiempoDescansoToast';
-import ResumenRutina from './components/Resumenrutina';
+import ResumenRutina from './components/ResumenRutina';
 
 export default function App() {
   const [screen, setScreen] = useState('routines');
