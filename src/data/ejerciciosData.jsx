@@ -85,8 +85,8 @@ const ejerciciosLocal = [
     /* abdominales */
     { id: "0052", nombre: "Elevacion de piernas", gif: "/gifs/elevacion-piernas.gif", parteDelCuerpo: "Abdominales", equipamiento: "P. corporal", subMusculos: [""] },
     { id: "0053", nombre: "Adbominales cortos (Peso)", gif: "/gifs/abd-cortos-p.jpg", parteDelCuerpo: "Abdominales", equipamiento: "Mancuernas", subMusculos: [""] },
-    { id: "0054", nombre: "Plancha", gif: "/gifs/plancha.mp4", parteDelCuerpo: "Abdominales", equipamiento: "P. corporal", subMusculos: [""] },
-    { id: "0059", nombre: "Rueda abdominal", gif: "/gifs/rueda-abd.gif", parteDelCuerpo: "Abdominales", equipamiento: "P. corporal", subMusculos: ["Hombros"] },
+    { id: "0054", nombre: "Plancha", gif: "/gifs/plancha.jpg", parteDelCuerpo: "Abdominales", equipamiento: "P. corporal", subMusculos: [""] },
+    { id: "0059", nombre: "Rueda abdominal", gif: "/gifs/rueda-abd.mp4", parteDelCuerpo: "Abdominales", equipamiento: "P. corporal", subMusculos: ["Hombros"] },
 
 
 ];
