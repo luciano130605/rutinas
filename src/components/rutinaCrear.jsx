@@ -159,10 +159,25 @@ export default function RutinaCrear({
                       <div className="musculo">
                         {ex.muscle}
                         {ex.rest ? (
-                          <span className="descanso-badge">
+                          <span
+                            className="descanso-badge"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openRestToast(exi);
+                            }}
+                          >
                             <Timer size={11} /> {ex.rest}s
                           </span>
-                        ) : null}
+                        ) : <span
+                          className="descanso-badge"
+                          title='Sin descanso'
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openRestToast(exi);
+                          }}
+                        >
+                          <Timer size={11} />
+                        </span>}
                       </div>
                     </div>
                   </div>
@@ -237,7 +252,7 @@ export default function RutinaCrear({
         {!isSingle && (
           <button className="btns agregar" style={{ marginTop: 6 }} onClick={() => onOpenPicker()}>+ Añadir ejercicio</button>
         )}
-       
+
       </div>
 
       {pickerOpen && (
